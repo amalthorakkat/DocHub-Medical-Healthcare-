@@ -16,6 +16,7 @@ import Bio from "./components/pages/Bio";
 import AdminDashboard from "./components/admin/AdminDashboard";
 import Appointments from "./components/pages/Appointments";
 import ScheduledAppointments from "./components/pages/ScheduledAppointments";
+import ScrollToTop from "./layout/ScrollToTop";
 
 // Protected Route for Admin
 const ProtectedAdminRoute = ({ children }) => {
@@ -76,6 +77,7 @@ const App = () => {
           className: "toast-slide-in",
         }}
       />
+      <ScrollToTop/>
       <Routes>
         <Route path="/" element={<UserLayout />}>
           <Route index element={<Home />} />

@@ -27,11 +27,18 @@
 //   useEffect(() => {
 //     const fetchDoctor = async () => {
 //       try {
+//         console.log("Fetching doctor with ID:", id);
 //         const response = await axiosInstance.get(`/users/doctor/${id}`);
+//         console.log("Doctor fetched:", response.data.doctor);
 //         setDoctor(response.data.doctor);
 //       } catch (err) {
+//         console.error("Fetch doctor error:", err.response?.data || err.message);
 //         toast.error(
-//           err.response?.data?.error || "Failed to fetch doctor details"
+//           err.response?.data?.error || "Failed to fetch doctor details",
+//           {
+//             position: "bottom-right",
+//             duration: 4000,
+//           }
 //         );
 //         if (err.response?.status === 404) {
 //           navigate("/doctors");
@@ -116,14 +123,28 @@
 
 //   const handleBookAppointment = async () => {
 //     if (!selectedDate || !selectedTime) {
-//       toast.error("Please select both a date and a time slot");
+//       toast.error("Please select both a date and a time slot", {
+//         position: "bottom-right",
+//         duration: 4000,
+//       });
 //       return;
 //     }
 
-//     const user = JSON.parse(localStorage.getItem("user"));
-//     if (!user) {
-//       toast.error("Please log in to book an appointment");
+//     const token = localStorage.getItem("token");
+//     if (!token) {
+//       toast.error("Please log in to book an appointment", {
+//         position: "bottom-right",
+//         duration: 4000,
+//       });
 //       navigate("/login");
+//       return;
+//     }
+
+//     if (!doctor || !doctor.appointmentFee) {
+//       toast.error("Doctor's consultation fee is not set or doctor data is missing", {
+//         position: "bottom-right",
+//         duration: 4000,
+//       });
 //       return;
 //     }
 
@@ -134,11 +155,30 @@
 //         time: selectedTime,
 //         fee: doctor.appointmentFee,
 //       };
-//       await dispatch(createAppointment(appointmentData)).unwrap();
-//       toast.success("Appointment booked successfully! Proceed to payment.");
+//       console.log("Booking appointment:", appointmentData);
+//       const response = await dispatch(createAppointment(appointmentData)).unwrap();
+//       console.log("Appointment created:", response);
+//       toast.success("Appointment booked successfully! Proceed to payment.", {
+//         position: "bottom-right",
+//         duration: 3000,
+//       });
 //       navigate("/my-appointments");
 //     } catch (error) {
-//       toast.error(error || "Failed to book appointment");
+//       console.error("Book appointment error:", {
+//         message: error.message,
+//         response: error.response?.data,
+//         status: error.response?.status,
+//       });
+//       const errorMessage = error.response?.data?.error || error.message || "Failed to book appointment";
+//       toast.error(errorMessage, {
+//         position: "bottom-right",
+//         duration: 4000,
+//       });
+//       if (error.response?.status === 401) {
+//         localStorage.removeItem("token");
+//         localStorage.removeItem("user");
+//         navigate("/login");
+//       }
 //     }
 //   };
 
@@ -398,8 +438,6 @@
 
 // export default DoctorDetails;
 
-
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -414,13 +452,16 @@ import {
   ChevronRight,
   Clock,
 } from "lucide-react";
+import RelatedDoctors from "./RelatedDoctors";
 
 const DoctorDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [doctor, setDoctor] = useState(null);
+  const [relatedDoctors, setRelatedDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [relatedLoading, setRelatedLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [showCalendar, setShowCalendar] = useState(false);
@@ -440,6 +481,21 @@ const DoctorDetails = () => {
           {
             position: "bottom-right",
             duration: 4000,
+            style: {
+              background: "#fff",
+              color: "#1F2937",
+              border: "1px solid #DC2626",
+              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+              borderRadius: "8px",
+              padding: "12px 16px",
+              fontSize: "14px",
+              fontWeight: "500",
+            },
+            iconTheme: {
+              primary: "#DC2626",
+              secondary: "#fff",
+            },
+            className: "toast-slide-in",
           }
         );
         if (err.response?.status === 404) {
@@ -451,6 +507,63 @@ const DoctorDetails = () => {
     };
     fetchDoctor();
   }, [id, navigate]);
+
+  useEffect(() => {
+    const fetchRelatedDoctors = async () => {
+      if (!doctor?.specialty) {
+        console.log("Skipping related doctors fetch: No doctor or specialty");
+        setRelatedDoctors([]);
+        setRelatedLoading(false);
+        return;
+      }
+      setRelatedLoading(true);
+      try {
+        console.log(
+          "Fetching related doctors for specialty:",
+          doctor.specialty
+        );
+        const response = await axiosInstance.get(
+          "/users/doctors-by-specialty",
+          {
+            params: { specialty: doctor.specialty, excludeId: id },
+          }
+        );
+        console.log("Related doctors response:", response.data);
+        setRelatedDoctors(response.data.doctors || []);
+      } catch (err) {
+        console.error(
+          "Fetch related doctors error:",
+          err.response?.data || err.message
+        );
+        toast.error(
+          err.response?.data?.error || "Failed to fetch related doctors",
+          {
+            position: "bottom-right",
+            duration: 4000,
+            style: {
+              background: "#fff",
+              color: "#1F2937",
+              border: "1px solid #DC2626",
+              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+              borderRadius: "8px",
+              padding: "12px 16px",
+              fontSize: "14px",
+              fontWeight: "500",
+            },
+            iconTheme: {
+              primary: "#DC2626",
+              secondary: "#fff",
+            },
+            className: "toast-slide-in",
+          }
+        );
+        setRelatedDoctors([]);
+      } finally {
+        setRelatedLoading(false);
+      }
+    };
+    fetchRelatedDoctors();
+  }, [doctor?.specialty, id]); // Update dependency to doctor.specialty
 
   const generateTimeSlots = () => {
     const times = [];
@@ -528,6 +641,21 @@ const DoctorDetails = () => {
       toast.error("Please select both a date and a time slot", {
         position: "bottom-right",
         duration: 4000,
+        style: {
+          background: "#fff",
+          color: "#1F2937",
+          border: "1px solid #DC2626",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+          borderRadius: "8px",
+          padding: "12px 16px",
+          fontSize: "14px",
+          fontWeight: "500",
+        },
+        iconTheme: {
+          primary: "#DC2626",
+          secondary: "#fff",
+        },
+        className: "toast-slide-in",
       });
       return;
     }
@@ -537,16 +665,49 @@ const DoctorDetails = () => {
       toast.error("Please log in to book an appointment", {
         position: "bottom-right",
         duration: 4000,
+        style: {
+          background: "#fff",
+          color: "#1F2937",
+          border: "1px solid #DC2626",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+          borderRadius: "8px",
+          padding: "12px 16px",
+          fontSize: "14px",
+          fontWeight: "500",
+        },
+        iconTheme: {
+          primary: "#DC2626",
+          secondary: "#fff",
+        },
+        className: "toast-slide-in",
       });
       navigate("/login");
       return;
     }
 
     if (!doctor || !doctor.appointmentFee) {
-      toast.error("Doctor's consultation fee is not set or doctor data is missing", {
-        position: "bottom-right",
-        duration: 4000,
-      });
+      toast.error(
+        "Doctor's consultation fee is not set or doctor data is missing",
+        {
+          position: "bottom-right",
+          duration: 4000,
+          style: {
+            background: "#fff",
+            color: "#1F2937",
+            border: "1px solid #DC2626",
+            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+            borderRadius: "8px",
+            padding: "12px 16px",
+            fontSize: "14px",
+            fontWeight: "500",
+          },
+          iconTheme: {
+            primary: "#DC2626",
+            secondary: "#fff",
+          },
+          className: "toast-slide-in",
+        }
+      );
       return;
     }
 
@@ -558,11 +719,28 @@ const DoctorDetails = () => {
         fee: doctor.appointmentFee,
       };
       console.log("Booking appointment:", appointmentData);
-      const response = await dispatch(createAppointment(appointmentData)).unwrap();
+      const response = await dispatch(
+        createAppointment(appointmentData)
+      ).unwrap();
       console.log("Appointment created:", response);
       toast.success("Appointment booked successfully! Proceed to payment.", {
         position: "bottom-right",
         duration: 3000,
+        style: {
+          background: "#fff",
+          color: "#1F2937",
+          border: "1px solid #5f6fff",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+          borderRadius: "8px",
+          padding: "12px 16px",
+          fontSize: "14px",
+          fontWeight: "500",
+        },
+        iconTheme: {
+          primary: "#5f6fff",
+          secondary: "#fff",
+        },
+        className: "toast-slide-in",
       });
       navigate("/my-appointments");
     } catch (error) {
@@ -571,10 +749,28 @@ const DoctorDetails = () => {
         response: error.response?.data,
         status: error.response?.status,
       });
-      const errorMessage = error.response?.data?.error || error.message || "Failed to book appointment";
+      const errorMessage =
+        error.response?.data?.error ||
+        error.message ||
+        "Failed to book appointment";
       toast.error(errorMessage, {
         position: "bottom-right",
         duration: 4000,
+        style: {
+          background: "#fff",
+          color: "#1F2937",
+          border: "1px solid #DC2626",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+          borderRadius: "8px",
+          padding: "12px 16px",
+          fontSize: "14px",
+          fontWeight: "500",
+        },
+        iconTheme: {
+          primary: "#DC2626",
+          secondary: "#fff",
+        },
+        className: "toast-slide-in",
       });
       if (error.response?.status === 401) {
         localStorage.removeItem("token");
@@ -586,7 +782,7 @@ const DoctorDetails = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-[140px] flex justify-center items-center">
+      <div className="min-h-screen pt-[140px] flex justify-center items-center bg-gradient-to-br from-indigo-50 via-white to-indigo-50">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
       </div>
     );
@@ -594,7 +790,7 @@ const DoctorDetails = () => {
 
   if (!doctor) {
     return (
-      <div className="min-h-screen pt-[140px] flex justify-center items-center">
+      <div className="min-h-screen pt-[140px] flex justify-center items-center bg-gradient-to-br from-indigo-50 via-white to-indigo-50">
         <p className="text-gray-600">Doctor not found</p>
       </div>
     );
@@ -633,6 +829,15 @@ const DoctorDetails = () => {
                         }
                         alt={doctor.name}
                         className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-white/20 shadow-xl"
+                        onError={(e) => {
+                          console.error("Image load error for doctor:", {
+                            doctorId: doctor._id,
+                            profilePic: doctor.profilePic,
+                          });
+                          e.target.src = `https://via.placeholder.com/150?text=${doctor.name.charAt(
+                            0
+                          )}`;
+                        }}
                       />
                       <div className="absolute -bottom-1 -right-[-10px] bg-green-400 w-6 h-6 sm:w-8 sm:h-8 rounded-full border-3 border-white flex items-center justify-center">
                         <div className="w-2 h-2 sm:w-3 sm:h-3 bg-white rounded-full"></div>
@@ -832,6 +1037,11 @@ const DoctorDetails = () => {
               </div>
             </div>
           </div>
+          <RelatedDoctors
+            doctors={relatedDoctors}
+            loading={relatedLoading}
+            specialty={doctor?.specialty}
+          />
         </div>
       </div>
     </div>
