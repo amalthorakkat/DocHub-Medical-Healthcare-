@@ -1,3 +1,5 @@
+
+
 // const User = require("../models/UserModel");
 // const bcrypt = require("bcryptjs");
 // const jwt = require("jsonwebtoken");
@@ -105,7 +107,7 @@
 //       experience: role === "doctor" ? experience : null,
 //       about: role === "doctor" ? about : null,
 //       appointmentFee: role === "doctor" ? appointmentFee : null,
-//       profilePic: req.file ? `/uploads/${req.file.filename}` : null,
+//       profilePic: req.file ? `/Uploads/${req.file.filename}` : null,
 //     };
 //     const user = new User(userData);
 //     await user.save();
@@ -168,7 +170,7 @@
 //             console.error("Failed to delete old profile pic:", err)
 //           );
 //       }
-//       updateData.profilePic = `/uploads/${req.file.filename}`;
+//       updateData.profilePic = `/Uploads/${req.file.filename}`;
 //     }
 //     const updatedUser = await User.findByIdAndUpdate(id, updateData, {
 //       new: true,
@@ -177,6 +179,73 @@
 //     res.send({ user: updatedUser });
 //   } catch (error) {
 //     console.error("Update User Error:", error.message, error.stack);
+//     res.status(400).send({ error: error.message });
+//   }
+// };
+
+// exports.updateOwnProfile = async (req, res) => {
+//   try {
+//     const userId = req.user._id;
+//     const { name, dob } = req.body;
+//     console.log("Updating own profile:", { userId, name, dob });
+
+//     // Modified: Make name and dob optional if profilePic is provided
+//     if (!name && !dob && !req.file) {
+//       throw new Error(
+//         "At least one field (name, dob, or profile picture) must be provided"
+//       );
+//     }
+
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       throw new Error("User not found");
+//     }
+
+//     const updateData = {};
+//     if (name) updateData.name = name;
+//     if (dob) updateData.dob = dob;
+//     if (req.file) {
+//       if (user.profilePic) {
+//         await fs
+//           .unlink(path.join(__dirname, "..", user.profilePic))
+//           .catch((err) =>
+//             console.error("Failed to delete old profile pic:", err)
+//           );
+//       }
+//       updateData.profilePic = `/Uploads/${req.file.filename}`;
+//     }
+
+//     const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+//       new: true,
+//     });
+//     console.log("Own profile updated:", { userId, name: updateData.name });
+//     res.send({ user: updatedUser });
+//   } catch (error) {
+//     console.error("Update Own Profile Error:", error.message, error.stack);
+//     res.status(400).send({ error: error.message });
+//   }
+// };
+
+// exports.deleteOwnProfilePic = async (req, res) => {
+//   try {
+//     const userId = req.user._id;
+//     console.log("Deleting own profile pic for user:", { userId });
+
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       throw new Error("User not found");
+//     }
+//     if (user.profilePic) {
+//       await fs
+//         .unlink(path.join(__dirname, "..", user.profilePic))
+//         .catch((err) => console.error("Failed to delete profile pic:", err));
+//       user.profilePic = null;
+//       await user.save();
+//     }
+//     console.log("Own profile pic deleted:", { userId });
+//     res.send({ user });
+//   } catch (error) {
+//     console.error("Delete Own Profile Pic Error:", error.message, error.stack);
 //     res.status(400).send({ error: error.message });
 //   }
 // };
@@ -323,16 +392,24 @@
 //     const query = {
 //       role: "doctor",
 //       specialty,
-//       _id: { $ne: excludeId } // Exclude the current doctor
+//       _id: { $ne: excludeId },
 //     };
-//     const doctors = await User.find(query).limit(5); // Limit to 5 related doctors
-//     console.log("Related doctors fetched:", doctors.map(d => ({ id: d._id, name: d.name })));
+//     const doctors = await User.find(query).limit(5);
+//     console.log(
+//       "Related doctors fetched:",
+//       doctors.map((d) => ({ id: d._id, name: d.name }))
+//     );
 //     res.send({ doctors });
 //   } catch (error) {
-//     console.error("Get Doctors By Specialty Error:", error.message, error.stack);
+//     console.error(
+//       "Get Doctors By Specialty Error:",
+//       error.message,
+//       error.stack
+//     );
 //     res.status(400).send({ error: error.message });
 //   }
 // };
+
 
 const User = require("../models/UserModel");
 const bcrypt = require("bcryptjs");
@@ -498,11 +575,15 @@ exports.updateUser = async (req, res) => {
     }
     if (req.file) {
       if (user.profilePic) {
-        await fs
-          .unlink(path.join(__dirname, "..", user.profilePic))
-          .catch((err) =>
-            console.error("Failed to delete old profile pic:", err)
-          );
+        const filename = user.profilePic.replace(/^\/Uploads\//, "");
+        const oldFilePath = path.join(__dirname, "..", "Uploads", filename);
+        try {
+          await fs.access(oldFilePath);
+          await fs.unlink(oldFilePath);
+          console.log("Old profile pic deleted:", oldFilePath);
+        } catch (err) {
+          console.error("Failed to delete old profile pic:", oldFilePath, err.message);
+        }
       }
       updateData.profilePic = `/Uploads/${req.file.filename}`;
     }
@@ -523,11 +604,8 @@ exports.updateOwnProfile = async (req, res) => {
     const { name, dob } = req.body;
     console.log("Updating own profile:", { userId, name, dob });
 
-    // Modified: Make name and dob optional if profilePic is provided
     if (!name && !dob && !req.file) {
-      throw new Error(
-        "At least one field (name, dob, or profile picture) must be provided"
-      );
+      throw new Error("At least one field (name, dob, or profile picture) must be provided");
     }
 
     const user = await User.findById(userId);
@@ -540,11 +618,15 @@ exports.updateOwnProfile = async (req, res) => {
     if (dob) updateData.dob = dob;
     if (req.file) {
       if (user.profilePic) {
-        await fs
-          .unlink(path.join(__dirname, "..", user.profilePic))
-          .catch((err) =>
-            console.error("Failed to delete old profile pic:", err)
-          );
+        const filename = user.profilePic.replace(/^\/Uploads\//, "");
+        const oldFilePath = path.join(__dirname, "..", "Uploads", filename);
+        try {
+          await fs.access(oldFilePath);
+          await fs.unlink(oldFilePath);
+          console.log("Old profile pic deleted:", oldFilePath);
+        } catch (err) {
+          console.error("Failed to delete old profile pic:", oldFilePath, err.message);
+        }
       }
       updateData.profilePic = `/Uploads/${req.file.filename}`;
     }
@@ -570,9 +652,15 @@ exports.deleteOwnProfilePic = async (req, res) => {
       throw new Error("User not found");
     }
     if (user.profilePic) {
-      await fs
-        .unlink(path.join(__dirname, "..", user.profilePic))
-        .catch((err) => console.error("Failed to delete profile pic:", err));
+      const filename = user.profilePic.replace(/^\/Uploads\//, "");
+      const filePath = path.join(__dirname, "..", "Uploads", filename);
+      try {
+        await fs.access(filePath);
+        await fs.unlink(filePath);
+        console.log("Profile pic deleted:", filePath);
+      } catch (err) {
+        console.error("Failed to delete profile pic:", filePath, err.message);
+      }
       user.profilePic = null;
       await user.save();
     }
@@ -593,9 +681,15 @@ exports.deleteUser = async (req, res) => {
       throw new Error("User not found");
     }
     if (user.profilePic) {
-      await fs
-        .unlink(path.join(__dirname, "..", user.profilePic))
-        .catch((err) => console.error("Failed to delete profile pic:", err));
+      const filename = user.profilePic.replace(/^\/Uploads\//, "");
+      const filePath = path.join(__dirname, "..", "Uploads", filename);
+      try {
+        await fs.access(filePath);
+        await fs.unlink(filePath);
+        console.log("Profile pic deleted:", filePath);
+      } catch (err) {
+        console.error("Failed to delete profile pic:", filePath, err.message);
+      }
     }
     await User.findByIdAndDelete(id);
     console.log("User deleted:", { id });
@@ -615,9 +709,15 @@ exports.deleteProfilePic = async (req, res) => {
       throw new Error("User not found");
     }
     if (user.profilePic) {
-      await fs
-        .unlink(path.join(__dirname, "..", user.profilePic))
-        .catch((err) => console.error("Failed to delete profile pic:", err));
+      const filename = user.profilePic.replace(/^\/Uploads\//, "");
+      const filePath = path.join(__dirname, "..", "Uploads", filename);
+      try {
+        await fs.access(filePath);
+        await fs.unlink(filePath);
+        console.log("Profile pic deleted:", filePath);
+      } catch (err) {
+        console.error("Failed to delete profile pic:", filePath, err.message);
+      }
       user.profilePic = null;
       await user.save();
     }
@@ -723,23 +823,16 @@ exports.getDoctorsBySpecialty = async (req, res) => {
     if (!specialty) {
       throw new Error("Specialty is required");
     }
-    const query = {
-      role: "doctor",
+    const query = { 
+      role: "doctor", 
       specialty,
-      _id: { $ne: excludeId },
+      _id: { $ne: excludeId }
     };
     const doctors = await User.find(query).limit(5);
-    console.log(
-      "Related doctors fetched:",
-      doctors.map((d) => ({ id: d._id, name: d.name }))
-    );
+    console.log("Related doctors fetched:", doctors.map(d => ({ id: d._id, name: d.name })));
     res.send({ doctors });
   } catch (error) {
-    console.error(
-      "Get Doctors By Specialty Error:",
-      error.message,
-      error.stack
-    );
+    console.error("Get Doctors By Specialty Error:", error.message, error.stack);
     res.status(400).send({ error: error.message });
   }
 };
