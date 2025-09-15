@@ -1462,7 +1462,7 @@ const Appointments = () => {
   };
 
   return (
-    <div className="pt-16 md:pt-24 lg:pt-[140px] px-4 sm:px-6 lg:px-[70px] bg-gradient-to-br from-orange-50 via-white to-orange-50 min-h-screen">
+    <div className="pt-16 md:pt-24  lg:pt-[200px] px-4 sm:px-6 lg:px-[70px] bg-gradient-to-br from-orange-50 via-white to-orange-50 min-h-screen">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8 sm:mb-12">
           <div className="flex items-center space-x-3 mb-4">

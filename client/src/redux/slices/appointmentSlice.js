@@ -1,9 +1,5 @@
-
-
 // import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-// import axios from "axios";
-
-// const API_URL = "http://localhost:5000/api/appointments";
+// import axiosInstance from "../../utils/axiosInstance";
 
 // export const fetchPendingAppointments = createAsyncThunk(
 //   "appointments/fetchPending",
@@ -17,11 +13,21 @@
 //       if (!token) {
 //         throw new Error("No authentication token found. Please log in.");
 //       }
-//       const response = await axios.get(`${API_URL}/pending`, {
+//       const response = await axiosInstance.get("/appointments/pending", {
 //         headers: { Authorization: `Bearer ${token}` },
 //       });
 //       console.log("fetchPendingAppointments - Response:", response.data);
-//       return response.data;
+//       const appointments = response.data.appointments || [];
+//       if (!Array.isArray(appointments)) {
+//         console.error(
+//           "fetchPendingAppointments - Response is not an array:",
+//           response.data
+//         );
+//         return rejectWithValue(
+//           "Invalid response format: appointments is not an array"
+//         );
+//       }
+//       return appointments;
 //     } catch (error) {
 //       console.error(
 //         "fetchPendingAppointments - Error:",
@@ -49,11 +55,21 @@
 //       if (!token) {
 //         throw new Error("No authentication token found. Please log in.");
 //       }
-//       const response = await axios.get(`${API_URL}/confirmed`, {
+//       const response = await axiosInstance.get("/appointments/confirmed", {
 //         headers: { Authorization: `Bearer ${token}` },
 //       });
 //       console.log("fetchConfirmedAppointments - Response:", response.data);
-//       return response.data;
+//       const appointments = response.data.appointments || [];
+//       if (!Array.isArray(appointments)) {
+//         console.error(
+//           "fetchConfirmedAppointments - Response is not an array:",
+//           response.data
+//         );
+//         return rejectWithValue(
+//           "Invalid response format: appointments is not an array"
+//         );
+//       }
+//       return appointments;
 //     } catch (error) {
 //       console.error(
 //         "fetchConfirmedAppointments - Error:",
@@ -78,11 +94,15 @@
 //       if (!token) {
 //         throw new Error("No authentication token found. Please log in.");
 //       }
-//       const response = await axios.post(API_URL, appointmentData, {
-//         headers: { Authorization: `Bearer ${token}` },
-//       });
+//       const response = await axiosInstance.post(
+//         "/appointments",
+//         appointmentData,
+//         {
+//           headers: { Authorization: `Bearer ${token}` },
+//         }
+//       );
 //       console.log("createAppointment - Response:", response.data);
-//       return response.data;
+//       return response.data.appointment;
 //     } catch (error) {
 //       console.error(
 //         "createAppointment - Error:",
@@ -107,7 +127,7 @@
 //       if (!token) {
 //         throw new Error("No authentication token found. Please log in.");
 //       }
-//       await axios.delete(`${API_URL}/${id}`, {
+//       await axiosInstance.delete(`/appointments/${id}`, {
 //         headers: { Authorization: `Bearer ${token}` },
 //       });
 //       console.log("deleteAppointment - Success:", id);
@@ -136,8 +156,8 @@
 //       if (!token) {
 //         throw new Error("No authentication token found. Please log in.");
 //       }
-//       const response = await axios.post(
-//         `${API_URL}/confirm`,
+//       const response = await axiosInstance.post(
+//         "/appointments/confirm",
 //         { appointmentId },
 //         {
 //           headers: { Authorization: `Bearer ${token}` },
@@ -181,7 +201,7 @@
 //       })
 //       .addCase(fetchPendingAppointments.fulfilled, (state, action) => {
 //         state.loading = false;
-//         state.pendingAppointments = action.payload.appointments;
+//         state.pendingAppointments = action.payload;
 //       })
 //       .addCase(fetchPendingAppointments.rejected, (state, action) => {
 //         state.loading = false;
@@ -193,7 +213,7 @@
 //       })
 //       .addCase(fetchConfirmedAppointments.fulfilled, (state, action) => {
 //         state.loading = false;
-//         state.confirmedAppointments = action.payload.appointments;
+//         state.confirmedAppointments = action.payload;
 //       })
 //       .addCase(fetchConfirmedAppointments.rejected, (state, action) => {
 //         state.loading = false;
@@ -205,7 +225,7 @@
 //       })
 //       .addCase(createAppointment.fulfilled, (state, action) => {
 //         state.loading = false;
-//         state.pendingAppointments.push(action.payload.appointment);
+//         state.pendingAppointments.push(action.payload);
 //       })
 //       .addCase(createAppointment.rejected, (state, action) => {
 //         state.loading = false;
@@ -238,7 +258,6 @@
 // export const { clearError } = appointmentSlice.actions;
 // export default appointmentSlice.reducer;
 
-
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../utils/axiosInstance";
 
@@ -260,8 +279,13 @@ export const fetchPendingAppointments = createAsyncThunk(
       console.log("fetchPendingAppointments - Response:", response.data);
       const appointments = response.data.appointments || [];
       if (!Array.isArray(appointments)) {
-        console.error("fetchPendingAppointments - Response is not an array:", response.data);
-        return rejectWithValue("Invalid response format: appointments is not an array");
+        console.error(
+          "fetchPendingAppointments - Response is not an array:",
+          response.data
+        );
+        return rejectWithValue(
+          "Invalid response format: appointments is not an array"
+        );
       }
       return appointments;
     } catch (error) {
@@ -297,8 +321,13 @@ export const fetchConfirmedAppointments = createAsyncThunk(
       console.log("fetchConfirmedAppointments - Response:", response.data);
       const appointments = response.data.appointments || [];
       if (!Array.isArray(appointments)) {
-        console.error("fetchConfirmedAppointments - Response is not an array:", response.data);
-        return rejectWithValue("Invalid response format: appointments is not an array");
+        console.error(
+          "fetchConfirmedAppointments - Response is not an array:",
+          response.data
+        );
+        return rejectWithValue(
+          "Invalid response format: appointments is not an array"
+        );
       }
       return appointments;
     } catch (error) {
@@ -316,6 +345,51 @@ export const fetchConfirmedAppointments = createAsyncThunk(
   }
 );
 
+export const fetchConfirmedAppointmentsCount = createAsyncThunk(
+  "appointments/fetchConfirmedCount",
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      const token = getState().auth.token;
+      console.log(
+        "fetchConfirmedAppointmentsCount - Token:",
+        token ? "Present" : "Missing"
+      );
+      if (!token) {
+        throw new Error("No authentication token found. Please log in.");
+      }
+      const response = await axiosInstance.get(
+        "/appointments/confirmed/count",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      console.log("fetchConfirmedAppointmentsCount - Response:", response.data);
+      const count = response.data.count || 0;
+      if (typeof count !== "number") {
+        console.error(
+          "fetchConfirmedAppointmentsCount - Invalid count:",
+          response.data
+        );
+        return rejectWithValue(
+          "Invalid response format: count is not a number"
+        );
+      }
+      return count;
+    } catch (error) {
+      console.error(
+        "fetchConfirmedAppointmentsCount - Error:",
+        error.message,
+        error.response?.data
+      );
+      return rejectWithValue(
+        error.response?.data?.error ||
+          error.message ||
+          "Failed to fetch confirmed appointments count"
+      );
+    }
+  }
+);
+
 export const createAppointment = createAsyncThunk(
   "appointments/create",
   async (appointmentData, { getState, rejectWithValue }) => {
@@ -325,9 +399,13 @@ export const createAppointment = createAsyncThunk(
       if (!token) {
         throw new Error("No authentication token found. Please log in.");
       }
-      const response = await axiosInstance.post("/appointments", appointmentData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axiosInstance.post(
+        "/appointments",
+        appointmentData,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       console.log("createAppointment - Response:", response.data);
       return response.data.appointment;
     } catch (error) {
@@ -412,6 +490,7 @@ const appointmentSlice = createSlice({
   initialState: {
     pendingAppointments: [],
     confirmedAppointments: [],
+    confirmedAppointmentsCount: 0,
     loading: false,
     error: null,
   },
@@ -446,6 +525,18 @@ const appointmentSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+      .addCase(fetchConfirmedAppointmentsCount.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchConfirmedAppointmentsCount.fulfilled, (state, action) => {
+        state.loading = false;
+        state.confirmedAppointmentsCount = action.payload;
+      })
+      .addCase(fetchConfirmedAppointmentsCount.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
       .addCase(createAppointment.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -475,6 +566,7 @@ const appointmentSlice = createSlice({
           (appointment) => appointment._id !== confirmedAppointment._id
         );
         state.confirmedAppointments.push(confirmedAppointment);
+        state.confirmedAppointmentsCount += 1;
       })
       .addCase(confirmAppointment.rejected, (state, action) => {
         state.error = action.payload;
