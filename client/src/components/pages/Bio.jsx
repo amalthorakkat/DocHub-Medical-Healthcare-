@@ -308,29 +308,29 @@ const Bio = () => {
                       />
                     </div>
                   )}
-
-                  <div className="absolute bottom-1 right-1 flex gap-2">
-                    <label className="cursor-pointer bg-[#F7971E] text-white p-3 rounded-full shadow-lg hover:bg-[#F7971E]/90 hover:scale-110 transition-all duration-200">
-                      <Edit size={16} />
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleProfilePicChange}
-                        aria-hidden="true"
-                      />
-                    </label>
-                    {hasDp && (
-                      <button
-                        className="cursor-pointer bg-red-500 text-white p-3 rounded-full shadow-lg hover:bg-red-600 hover:scale-110 transition-all duration-200"
-                        onClick={handleRemoveProfilePic}
-                        aria-label="Remove profile picture"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
-                  </div>
                 </div>
+              </div>
+
+              <div className=" mt-[-50px] z-10 flex gap-2">
+                <label className="cursor-pointer bg-[#F7971E] text-white p-3 rounded-full shadow-lg hover:bg-[#F7971E]/90 hover:scale-110 transition-all duration-200">
+                  <Edit size={16} />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleProfilePicChange}
+                    aria-hidden="true"
+                  />
+                </label>
+                {hasDp && (
+                  <button
+                    className="cursor-pointer bg-red-500 text-white p-3 rounded-full shadow-lg hover:bg-red-600 hover:scale-110 transition-all duration-200"
+                    onClick={handleRemoveProfilePic}
+                    aria-label="Remove profile picture"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
               </div>
 
               {/* Profile Info */}
