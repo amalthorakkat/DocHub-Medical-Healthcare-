@@ -1,6 +1,3 @@
-
-
-
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Provider, useSelector } from "react-redux";
@@ -77,7 +74,7 @@ const App = () => {
           className: "toast-slide-in",
         }}
       />
-      <ScrollToTop/>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<UserLayout />}>
           <Route index element={<Home />} />
