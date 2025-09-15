@@ -1,6 +1,4 @@
-
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, ChevronDown, ChevronUp } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
@@ -15,10 +13,23 @@ const Header = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
+  const dropdownRef = useRef(null); // Ref for handling click outside
 
   useEffect(() => {
     console.log("Header - Current user state:", user);
   }, [user]);
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsProfileOpen(false);
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const borderClass =
     location.pathname === "/"
@@ -110,9 +121,17 @@ const Header = () => {
         <div className="flex items-center gap-4">
           {user ? (
             <>
-              <div className="relative flex items-center gap-2">
+              <div
+                className="relative flex items-center gap-2"
+                ref={dropdownRef}
+              >
                 <div
                   onClick={handleAvatarClick}
+                  onKeyDown={(e) => e.key === "Enter" && handleAvatarClick()}
+                  role="button"
+                  tabIndex={0}
+                  aria-haspopup="true"
+                  aria-expanded={isProfileOpen}
                   className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center cursor-pointer hover:bg-gray-700 transition-all duration-300 overflow-hidden"
                 >
                   {user.profilePic ? (
@@ -133,13 +152,27 @@ const Header = () => {
                   <ChevronDown size={16} className={textColor} />
                 )}
                 {isProfileOpen && (
-                  <div className="absolute top-full right-0 mt-2 w-48 bg-white/95 backdrop-blur-md border border-gray-900 rounded-lg shadow-lg z-50">
-                    <ul className="flex flex-col items-start p-4 space-y-3">
+                  <div
+                    className="absolute top-full right-0 mt-3 w-56 bg-gradient-to-br from-white/95 to-gray-100/95 backdrop-blur-lg border border-gray-200 rounded-xl shadow-xl z-50 transform transition-all duration-300 ease-in-out opacity-0 translate-y-2 animate-dropdown"
+                    style={{
+                      animation: isProfileOpen
+                        ? "dropdown-open 0.3s forwards"
+                        : "none",
+                    }}
+                  >
+                    <ul className="flex flex-col p-3 space-y-2">
                       {profileMenuItems.map((item) => (
-                        <li key={item.name}>
+                        <li
+                          key={item.name}
+                          className="group relative rounded-lg hover:bg-gray-200/50 transition-all duration-200"
+                        >
                           <button
                             onClick={() => handleProfileItemClick(item)}
-                            className="w-full cursor-pointer text-left text-gray-900 font-medium hover:text-gray-600 transition transform duration-200 hover:scale-105 active:scale-95"
+                            onKeyDown={(e) =>
+                              e.key === "Enter" && handleProfileItemClick(item)
+                            }
+                            role="menuitem"
+                            className="w-full text-left px-4 py-2 text-gray-800 font-medium group-hover:text-gray-900 group-hover:scale-105 transition-all duration-200"
                           >
                             {item.name}
                           </button>
@@ -171,18 +204,25 @@ const Header = () => {
       <button
         className={textColor + " md:hidden"}
         onClick={() => setIsOpen(!isOpen)}
+        aria-label={isOpen ? "Close menu" : "Open menu"}
       >
         {isOpen ? <X size={28} /> : <Menu size={28} />}
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-5 mt-3 w-48 bg-white/95 backdrop-blur-md border border-gray-900 rounded-lg shadow-lg md:hidden z-50">
-          <ul className="flex flex-col items-start p-4 space-y-3">
+        <div
+          className="absolute top-full right-5 mt-3 w-64 bg-gradient-to-br from-white/95 to-gray-100/95 backdrop-blur-lg border border-gray-200 rounded-xl shadow-xl md:hidden z-50 transform transition-all duration-300 ease-in-out"
+          ref={dropdownRef}
+        >
+          <ul className="flex flex-col p-3 space-y-2">
             {menuItems.map((item) => (
-              <li key={item.name}>
+              <li
+                key={item.name}
+                className="rounded-lg hover:bg-gray-200/50 transition-all duration-200"
+              >
                 <Link
                   to={item.path}
-                  className="cursor-pointer text-gray-900 font-medium hover:text-gray-600 transition transform duration-200 hover:scale-105 active:scale-95"
+                  className="block px-4 py-2 text-gray-800 font-medium hover:text-gray-900 hover:scale-105 transition-all duration-200"
                   onClick={() => setIsOpen(false)}
                 >
                   {item.name}
@@ -191,10 +231,15 @@ const Header = () => {
             ))}
             {user ? (
               <>
-                <li>
+                <li className="rounded-lg hover:bg-gray-200/50 transition-all duration-200">
                   <div
                     onClick={handleAvatarClick}
-                    className="flex items-center gap-2"
+                    onKeyDown={(e) => e.key === "Enter" && handleAvatarClick()}
+                    role="button"
+                    tabIndex={0}
+                    aria-haspopup="true"
+                    aria-expanded={isProfileOpen}
+                    className="flex items-center gap-2 px-4 py-2"
                   >
                     <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center cursor-pointer hover:bg-gray-700 transition-all duration-300 overflow-hidden">
                       {user.profilePic ? (
@@ -217,12 +262,19 @@ const Header = () => {
                   </div>
                 </li>
                 {isProfileOpen && (
-                  <ul className="flex flex-col items-start pl-4 space-y-3">
+                  <ul className="flex flex-col pl-4 space-y-2">
                     {profileMenuItems.map((item) => (
-                      <li key={item.name}>
+                      <li
+                        key={item.name}
+                        className="rounded-lg hover:bg-gray-200/50 transition-all duration-200"
+                      >
                         <button
                           onClick={() => handleProfileItemClick(item)}
-                          className="w-full text-left text-gray-900 font-medium hover:text-gray-600 transition transform duration-200 hover:scale-105 active:scale-95"
+                          onKeyDown={(e) =>
+                            e.key === "Enter" && handleProfileItemClick(item)
+                          }
+                          role="menuitem"
+                          className="w-full text-left px-4 py-2 text-gray-800 font-medium hover:text-gray-900 hover:scale-105 transition-all duration-200"
                         >
                           {item.name}
                         </button>
@@ -231,10 +283,10 @@ const Header = () => {
                   </ul>
                 )}
                 {user.role === "admin" && (
-                  <li>
+                  <li className="rounded-lg hover:bg-gray-200/50 transition-all duration-200">
                     <Link
                       to="/admin"
-                      className={`${adminButtonClasses} w-full text-center`}
+                      className={`${adminButtonClasses} block w-full text-center px-4 py-2`}
                       onClick={() => setIsOpen(false)}
                     >
                       Admin Panel
@@ -244,19 +296,19 @@ const Header = () => {
               </>
             ) : (
               <>
-                <li>
+                <li className="rounded-lg hover:bg-gray-200/50 transition-all duration-200">
                   <Link
                     to="/login"
-                    className={`${loginClasses} w-full text-center`}
+                    className={`${loginClasses} block w-full text-center px-4 py-2`}
                     onClick={() => setIsOpen(false)}
                   >
                     Login
                   </Link>
                 </li>
-                <li>
+                <li className="rounded-lg hover:bg-gray-200/50 transition-all duration-200">
                   <Link
                     to="/signup"
-                    className={`${signupClasses} w-full text-center`}
+                    className={`${signupClasses} block w-full text-center px-4 py-2`}
                     onClick={() => setIsOpen(false)}
                   >
                     Sign Up
@@ -270,5 +322,27 @@ const Header = () => {
     </header>
   );
 };
+
+// Add CSS for dropdown animation
+const styles = `
+  @keyframes dropdown-open {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-dropdown {
+    animation: dropdown-open 0.3s ease-in-out forwards;
+  }
+`;
+
+// Inject styles into the document
+const styleSheet = document.createElement("style");
+styleSheet.innerText = styles;
+document.head.appendChild(styleSheet);
 
 export default Header;
