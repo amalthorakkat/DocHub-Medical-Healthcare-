@@ -1,3 +1,5 @@
+
+
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Provider, useSelector } from "react-redux";
@@ -14,6 +16,8 @@ import AdminDashboard from "./components/admin/AdminDashboard";
 import Appointments from "./components/pages/Appointments";
 import ScheduledAppointments from "./components/pages/ScheduledAppointments";
 import ScrollToTop from "./layout/ScrollToTop";
+import About from "./components/pages/about/About";
+import Contact from "./components/pages/contactUs/Contact";
 
 // Protected Route for Admin
 const ProtectedAdminRoute = ({ children }) => {
@@ -74,7 +78,7 @@ const App = () => {
           className: "toast-slide-in",
         }}
       />
-      <ScrollToTop />
+      <ScrollToTop/>
       <Routes>
         <Route path="/" element={<UserLayout />}>
           <Route index element={<Home />} />
@@ -86,6 +90,8 @@ const App = () => {
             path="/scheduled-appointments"
             element={<ScheduledAppointments />}
           />
+          <Route path="/about" element={<About/>} />
+          <Route path="/contact" element={<Contact/>} />
           <Route
             path="login"
             element={
