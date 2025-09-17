@@ -3,12 +3,16 @@
 import React from "react";
 import PosterImage from "../../assets/appointment_img.png";
 import { useNavigate } from "react-router-dom";
+import FadeContent from "../../animations/FadeContent";
 
 
 const Poster2 = () => {
   const navigate = useNavigate()
   return (
-    <div className="lg:px-[70px]">
+    <div className="lg:px-[70px] px-[15px] ">
+      <FadeContent blur={true} delay={200} > 
+
+     
       <section className="relative bg-[#5f6fff] rounded-2xl shadow-lg my-10 mx-4 lg:mx-20">
         <div className="w-full h-[450px] mx-auto px-6 md:px-12 grid md:grid-cols-2 gap-10">
           {/* Left Text */}
@@ -42,6 +46,7 @@ const Poster2 = () => {
           </div>
         </div>
       </section>
+       </FadeContent>
     </div>
   );
 };

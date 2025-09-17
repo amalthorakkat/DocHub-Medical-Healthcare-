@@ -3,11 +3,13 @@ import Poster from './Poster'
 import Filter from './Filter'
 import Doctors from './Doctors'
 import Poster2 from './Poster2'
+import Carousel from './Carousel'
 
 const Home = () => {
   return (
     <div>
         <Poster/>
+        <Carousel  />
         <Filter/>
         <Doctors/>
         <Poster2/>

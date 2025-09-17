@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from "react";
 import Sins from "../../assets/sins.jpeg";
 import { gsap } from "gsap";
+import Transition from "../../animations/Transition";
+import FadeContent from "../../animations/FadeContent";
 
 // Function to generate multiple box-shadows for stars
 const multipleBoxShadow = (n) => {
@@ -138,16 +140,22 @@ const Poster = () => {
       <div className="flex flex-col lg:flex-row items-center gap-10 relative z-10">
         {/* Text Section */}
         <div className="flex-1">
-          <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
-            Book Appointment <br /> With Trusted Doctors
-          </h1>
-          <p className="text-[#c5c5c5] mb-6 text-lg">
-            Simply browse through our extensive list of trusted doctors,
-            schedule your appointment hassle-free, and get the best healthcare
-            at your convenience.
-          </p>
-          <button
-            className="
+          <Transition distance={50} duration={1.5} delay={0.3}>
+            <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
+              Book Appointment <br /> With Trusted Doctors
+            </h1>
+          </Transition>
+
+          <Transition distance={50} duration={1.8} delay={0.3}>
+            <p className="text-[#c5c5c5] mb-6 text-lg">
+              Simply browse through our extensive list of trusted doctors,
+              schedule your appointment hassle-free, and get the best healthcare
+              at your convenience.
+            </p>
+          </Transition>
+          <Transition distance={50} duration={2} delay={0.3}>
+            <button
+              className="
     px-6 py-3 
     bg-[#f5961d] text-black 
     rounded-lg shadow-lg
@@ -156,18 +164,34 @@ const Poster = () => {
     transition-all duration-200
     cursor-pointer
   "
-          >
-            Book Appointment
-          </button>
+            >
+              Book Appointment
+            </button>
+          </Transition>
         </div>
 
         {/* Image Section */}
+
+        {/* <div className="flex-1 flex justify-end">
+          <FadeContent blur={true} delay={200}>
+            <img
+              src={Sins}
+              alt="Doctor Poster"
+              className="w-full object-top max-w-md h-120 rounded-xl shadow-lg object-cover hover:scale-105 transition-transform duration-300"
+            />
+          </FadeContent>
+        </div>   */}
+
         <div className="flex-1 flex justify-end">
-          <img
-            src={Sins}
-            alt="Doctor Poster"
-            className="w-full object-top max-w-md h-120 rounded-xl shadow-lg object-cover hover:scale-105 transition-transform duration-300"
-          />
+          <FadeContent blur={true} delay={200}>
+            <div className="w-full sm:w-64 md:w-80 lg:w-122 sm:aspect-square">
+              <img
+                src={Sins}
+                alt="Doctor Poster"
+                className="w-full h-full object-cover rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+          </FadeContent>
         </div>
       </div>
     </div>
