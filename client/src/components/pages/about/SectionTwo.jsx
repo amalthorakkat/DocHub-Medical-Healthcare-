@@ -1,7 +1,10 @@
 import React from "react";
+import Transition from "../../../animations/Transition";
+import FadeContent from "../../../animations/FadeContent";
 
 const SectionTwo = () => {
   return (
+    <FadeContent blur={true} delay={200} >
     <div className="px-[10px] py-[30px] lg:py-[100px] lg:px-[200px] ">
       <div className=" bg-[#7480FF] py-[30px] sm:py-[70px]  sm:px-[100px] rounded-[20px] sm:rounded-[40px] flex flex-col sm:flex-row gap-2  justify-between text-white items-center " >
         <div>
@@ -12,6 +15,7 @@ const SectionTwo = () => {
         </div>
       </div>
     </div>
+    </FadeContent>
   );
 };
 

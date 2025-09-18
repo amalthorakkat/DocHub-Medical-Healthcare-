@@ -3,6 +3,9 @@ import Sins from "../../assets/sins.jpeg";
 import { gsap } from "gsap";
 import Transition from "../../animations/Transition";
 import FadeContent from "../../animations/FadeContent";
+import { useNavigate } from "react-router-dom";
+
+
 
 // Function to generate multiple box-shadows for stars
 const multipleBoxShadow = (n) => {
@@ -22,6 +25,7 @@ const Poster = () => {
   const starsRef = useRef(null);
   const stars2Ref = useRef(null);
   const stars3Ref = useRef(null);
+  const navigate = useNavigate()
 
   useEffect(() => {
     // GSAP animations for each star layer
@@ -155,6 +159,7 @@ const Poster = () => {
           </Transition>
           <Transition distance={50} duration={2} delay={0.3}>
             <button
+          onClick={()=>navigate('/all-doctors')}
               className="
     px-6 py-3 
     bg-[#f5961d] text-black 
@@ -172,15 +177,7 @@ const Poster = () => {
 
         {/* Image Section */}
 
-        {/* <div className="flex-1 flex justify-end">
-          <FadeContent blur={true} delay={200}>
-            <img
-              src={Sins}
-              alt="Doctor Poster"
-              className="w-full object-top max-w-md h-120 rounded-xl shadow-lg object-cover hover:scale-105 transition-transform duration-300"
-            />
-          </FadeContent>
-        </div>   */}
+     
 
         <div className="flex-1 flex justify-end">
           <FadeContent blur={true} delay={200}>

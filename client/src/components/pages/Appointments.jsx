@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -24,6 +22,8 @@ import ScheduledAppointments from "./ScheduledAppointments";
 import DocPlaceholder from "../../assets/doc_placeholder.png";
 import Lottie from "lottie-react";
 import DoctorAnimation from "../../assets/lottie/Doctor.json";
+import FadeContent from "../../animations/FadeContent";
+import Transition from "../../animations/Transition";
 
 const stripePromise = loadStripe(
   "pk_test_51S3JakIpWotxN01OqBKsywesGuzSCCxRJxYLV6a8Tvh1guvUN4OhBTKge137tQkCXIJfF92PKDDqUjpmdyrc0HHI000mKpFMeW"
@@ -628,6 +628,7 @@ const Appointments = () => {
     <div className="pt-16 md:pt-24  lg:pt-[200px] px-4 sm:px-6 lg:px-[70px] bg-gradient-to-br from-orange-50 via-white to-orange-50 min-h-screen">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8 sm:mb-12">
+          <Transition distance={50} duration={1.5} delay={0.3}>
           <div className="flex items-center space-x-3 mb-4">
             <div className="p-3 bg-gradient-to-r from-[#F7971E] to-[#FFB347] rounded-2xl shadow-lg">
               <Stethoscope className="w-6 h-6 text-white" />
@@ -641,6 +642,7 @@ const Appointments = () => {
               </p>
             </div>
           </div>
+          </Transition>
         </div>
 
         {loading && (
@@ -680,190 +682,202 @@ const Appointments = () => {
         )}
 
         {!loading && pendingAppointments.length > 0 && (
-          <div className="space-y-6">
-            <div className="relative">
-              <div className="bg-gradient-to-r from-[#F7971E] to-[#FFB347] px-6 py-4 rounded-2xl shadow-lg">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <Clock className="w-5 h-5 text-white" />
-                    <h2 className="text-white text-lg font-semibold">
-                      Pending Appointments
-                    </h2>
-                  </div>
-                  <div className="bg-white bg-opacity-20 px-3 py-1 rounded-full">
-                    <span className="text-gray-500 text-sm font-medium">
-                      {pendingAppointments.length} pending
-                    </span>
+          <FadeContent
+            blur={true}
+            duration={800}
+            delay={0}
+            easing="ease-out"
+            threshold={0.2}
+            initialOpacity={0}
+          >
+            <div className="space-y-6">
+              <div className="relative">
+                <div className="bg-gradient-to-r from-[#F7971E] to-[#FFB347] px-6 py-4 rounded-2xl shadow-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Clock className="w-5 h-5 text-white" />
+                      <h2 className="text-white text-lg font-semibold">
+                        Pending Appointments
+                      </h2>
+                    </div>
+                    <div className="bg-white bg-opacity-20 px-3 py-1 rounded-full">
+                      <span className="text-gray-500 text-sm font-medium">
+                        {pendingAppointments.length} pending
+                      </span>
+                    </div>
                   </div>
                 </div>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#F7971E] to-[#FFB347] rounded-2xl blur-sm opacity-30 -z-10"></div>
               </div>
-              <div className="absolute inset-0 bg-gradient-to-r from-[#F7971E] to-[#FFB347] rounded-2xl blur-sm opacity-30 -z-10"></div>
-            </div>
 
-            <div className="grid gap-6">
-              {pendingAppointments.map((appointment, index) => {
-                if (!appointment.doctorId) {
-                  console.warn(
-                    "Missing doctorId for appointment:",
-                    appointment._id
-                  );
-                }
-                return (
-                  <div
-                    key={appointment._id}
-                    className="group bg-white border border-orange-100 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden transform hover:-translate-y-1"
-                    style={{
-                      animationName: "fadeInUp",
-                      animationDuration: "0.6s",
-                      animationTimingFunction: "ease-out",
-                      animationFillMode: "forwards",
-                      animationDelay: `${index * 150}ms`,
-                    }}
-                  >
-                    <div className="flex flex-col md:grid md:grid-cols-3 gap-0">
-                      <div className="flex items-center justify-center md:col-span-1 p-6 bg-gradient-to-br from-orange-50 to-orange-100">
-                        <div className="relative group-hover:scale-105 transition-transform duration-300">
-                          <img
-                            className="w-[240px] h-[240px] object-cover rounded-2xl shadow-lg border-4 border-white"
-                            src={
-                              appointment.doctorId?.profilePic
-                                ? `http://localhost:5000${appointment.doctorId.profilePic}`
-                                : DocPlaceholder
-                            }
-                            alt={appointment.doctorId?.name || "Unknown Doctor"}
-                            onError={(e) => {
-                              console.error(
-                                "Image load error for appointment:",
-                                {
-                                  appointmentId: appointment._id,
-                                  doctorId: appointment.doctorId?._id,
-                                  profilePic: appointment.doctorId?.profilePic,
-                                }
-                              );
-                              e.target.src = DocPlaceholder;
-                            }}
-                          />
-                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        </div>
-                      </div>
-
-                      <div className="md:col-span-2 p-6">
-                        <div className="flex flex-col lg:flex-row lg:justify-between gap-6">
-                          <div className="flex-1 space-y-4">
-                            <div className="space-y-3">
-                              <div>
-                                <h3 className="text-2xl font-bold text-gray-900 mb-2 group-hover:text-[#F7971E] transition-colors duration-300">
-                                  Dr.{" "}
-                                  {appointment.doctorId?.name ||
-                                    "Unknown Doctor"}
-                                </h3>
-                                <div className="flex items-center space-x-2 text-gray-600 mb-2">
-                                  <div className="p-1 bg-orange-100 rounded-lg">
-                                    <User className="w-4 h-4 text-[#F7971E]" />
-                                  </div>
-                                  <span className="font-semibold text-sm">
-                                    {appointment.doctorId?.specialty ||
-                                      "General Practice"}
-                                  </span>
-                                </div>
-                                <div className="flex items-center space-x-2 text-gray-500">
-                                  <div className="p-1 bg-orange-100 rounded-lg">
-                                    <Award className="w-4 h-4 text-[#F7971E]" />
-                                  </div>
-                                  <span className="text-sm">
-                                    {appointment.doctorId?.experience || "5+"}{" "}
-                                    years experience
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="bg-gradient-to-r from-orange-50 to-transparent p-4 rounded-xl border-l-4 border-[#F7971E]">
-                              <h4 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-3 flex items-center space-x-2">
-                                <Calendar className="w-4 h-4 text-[#F7971E]" />
-                                <span>Appointment Details</span>
-                              </h4>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="flex items-center space-x-3">
-                                  <div className="p-2 bg-white rounded-lg shadow-sm">
-                                    <Calendar className="w-4 h-4 text-[#F7971E]" />
-                                  </div>
-                                  <div>
-                                    <div className="text-xs text-gray-500 uppercase font-semibold">
-                                      Date
-                                    </div>
-                                    <div className="font-bold text-gray-900">
-                                      {formatDate(appointment.date)}
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="flex items-center space-x-3">
-                                  <div className="p-2 bg-white rounded-lg shadow-sm">
-                                    <Clock className="w-4 h-4 text-[#F7971E]" />
-                                  </div>
-                                  <div>
-                                    <div className="text-xs text-gray-500 uppercase font-semibold">
-                                      Time
-                                    </div>
-                                    <div className="font-bold text-gray-900">
-                                      {formatTime(appointment.time)}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="lg:min-w-[220px] lg:pl-6 lg:border-l border-gray-200">
-                            <div className="bg-gradient-to-br from-gray-50 to-white p-5 rounded-xl border border-gray-100">
-                              <div className="text-center mb-6">
-                                <div className="text-xs text-gray-500 uppercase tracking-wider mb-2 font-semibold">
-                                  Consultation Fee
-                                </div>
-                                <div className="text-3xl font-bold text-gray-900 mb-1">
-                                  ${appointment.fee || "50"}.00
-                                </div>
-                                <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full inline-block">
-                                  Per session
-                                </div>
-                              </div>
-                              <div className="space-y-3">
-                                <button
-                                  onClick={() => handlePayNow(appointment)}
-                                  disabled={isPaying === appointment._id}
-                                  className={`w-full bg-gradient-to-r from-[#F7971E] to-[#FFB347] hover:from-[#e08a1b] hover:to-[#F7971E] text-white px-4 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105 ${
-                                    isPaying === appointment._id
-                                      ? "opacity-50 cursor-not-allowed"
-                                      : ""
-                                  }`}
-                                >
-                                  <CreditCard className="w-4 h-4" />
-                                  <span>
-                                    {isPaying === appointment._id
-                                      ? "Processing..."
-                                      : "Pay Now"}
-                                  </span>
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    handleRemoveAppointment(appointment._id)
+              <div className="grid gap-6">
+                {pendingAppointments.map((appointment, index) => {
+                  if (!appointment.doctorId) {
+                    console.warn(
+                      "Missing doctorId for appointment:",
+                      appointment._id
+                    );
+                  }
+                  return (
+                    <div
+                      key={appointment._id}
+                      className="group bg-white border border-orange-100 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden transform hover:-translate-y-1"
+                      style={{
+                        animationName: "fadeInUp",
+                        animationDuration: "0.6s",
+                        animationTimingFunction: "ease-out",
+                        animationFillMode: "forwards",
+                        animationDelay: `${index * 150}ms`,
+                      }}
+                    >
+                      <div className="flex flex-col md:grid md:grid-cols-3 gap-0">
+                        <div className="flex items-center justify-center md:col-span-1 p-6 bg-gradient-to-br from-orange-50 to-orange-100">
+                          <div className="relative group-hover:scale-105 transition-transform duration-300">
+                            <img
+                              className="w-[240px] h-[240px] object-cover rounded-2xl shadow-lg border-4 border-white"
+                              src={
+                                appointment.doctorId?.profilePic
+                                  ? `http://localhost:5000${appointment.doctorId.profilePic}`
+                                  : DocPlaceholder
+                              }
+                              alt={
+                                appointment.doctorId?.name || "Unknown Doctor"
+                              }
+                              onError={(e) => {
+                                console.error(
+                                  "Image load error for appointment:",
+                                  {
+                                    appointmentId: appointment._id,
+                                    doctorId: appointment.doctorId?._id,
+                                    profilePic:
+                                      appointment.doctorId?.profilePic,
                                   }
-                                  className="w-full border-2 border-gray-200 text-gray-700 hover:bg-red-50 hover:border-red-200 hover:text-red-700 px-4 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2"
-                                >
-                                  <X className="w-4 h-4" />
-                                  <span>Remove</span>
-                                </button>
+                                );
+                                e.target.src = DocPlaceholder;
+                              }}
+                            />
+                            <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                          </div>
+                        </div>
+
+                        <div className="md:col-span-2 p-6">
+                          <div className="flex flex-col lg:flex-row lg:justify-between gap-6">
+                            <div className="flex-1 space-y-4">
+                              <div className="space-y-3">
+                                <div>
+                                  <h3 className="text-2xl font-bold text-gray-900 mb-2 group-hover:text-[#F7971E] transition-colors duration-300">
+                                    Dr.{" "}
+                                    {appointment.doctorId?.name ||
+                                      "Unknown Doctor"}
+                                  </h3>
+                                  <div className="flex items-center space-x-2 text-gray-600 mb-2">
+                                    <div className="p-1 bg-orange-100 rounded-lg">
+                                      <User className="w-4 h-4 text-[#F7971E]" />
+                                    </div>
+                                    <span className="font-semibold text-sm">
+                                      {appointment.doctorId?.specialty ||
+                                        "General Practice"}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center space-x-2 text-gray-500">
+                                    <div className="p-1 bg-orange-100 rounded-lg">
+                                      <Award className="w-4 h-4 text-[#F7971E]" />
+                                    </div>
+                                    <span className="text-sm">
+                                      {appointment.doctorId?.experience || "5+"}{" "}
+                                      years experience
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="bg-gradient-to-r from-orange-50 to-transparent p-4 rounded-xl border-l-4 border-[#F7971E]">
+                                <h4 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-3 flex items-center space-x-2">
+                                  <Calendar className="w-4 h-4 text-[#F7971E]" />
+                                  <span>Appointment Details</span>
+                                </h4>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                  <div className="flex items-center space-x-3">
+                                    <div className="p-2 bg-white rounded-lg shadow-sm">
+                                      <Calendar className="w-4 h-4 text-[#F7971E]" />
+                                    </div>
+                                    <div>
+                                      <div className="text-xs text-gray-500 uppercase font-semibold">
+                                        Date
+                                      </div>
+                                      <div className="font-bold text-gray-900">
+                                        {formatDate(appointment.date)}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center space-x-3">
+                                    <div className="p-2 bg-white rounded-lg shadow-sm">
+                                      <Clock className="w-4 h-4 text-[#F7971E]" />
+                                    </div>
+                                    <div>
+                                      <div className="text-xs text-gray-500 uppercase font-semibold">
+                                        Time
+                                      </div>
+                                      <div className="font-bold text-gray-900">
+                                        {formatTime(appointment.time)}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="lg:min-w-[220px] lg:pl-6 lg:border-l border-gray-200">
+                              <div className="bg-gradient-to-br from-gray-50 to-white p-5 rounded-xl border border-gray-100">
+                                <div className="text-center mb-6">
+                                  <div className="text-xs text-gray-500 uppercase tracking-wider mb-2 font-semibold">
+                                    Consultation Fee
+                                  </div>
+                                  <div className="text-3xl font-bold text-gray-900 mb-1">
+                                    ${appointment.fee || "50"}.00
+                                  </div>
+                                  <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full inline-block">
+                                    Per session
+                                  </div>
+                                </div>
+                                <div className="space-y-3">
+                                  <button
+                                    onClick={() => handlePayNow(appointment)}
+                                    disabled={isPaying === appointment._id}
+                                    className={`w-full bg-gradient-to-r from-[#F7971E] to-[#FFB347] hover:from-[#e08a1b] hover:to-[#F7971E] text-white px-4 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105 ${
+                                      isPaying === appointment._id
+                                        ? "opacity-50 cursor-not-allowed"
+                                        : ""
+                                    }`}
+                                  >
+                                    <CreditCard className="w-4 h-4" />
+                                    <span>
+                                      {isPaying === appointment._id
+                                        ? "Processing..."
+                                        : "Pay Now"}
+                                    </span>
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      handleRemoveAppointment(appointment._id)
+                                    }
+                                    className="w-full border-2 border-gray-200 text-gray-700 hover:bg-red-50 hover:border-red-200 hover:text-red-700 px-4 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2"
+                                  >
+                                    <X className="w-4 h-4" />
+                                    <span>Remove</span>
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          </FadeContent>
         )}
 
         {isRemoveModalOpen && (

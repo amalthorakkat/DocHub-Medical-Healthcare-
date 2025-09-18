@@ -4,7 +4,7 @@ import SectionTwo from './SectionTwo'
 
 const About = () => {
   return (
-    <div className='   '>
+    <div >
         <SectionOne/>
         <SectionTwo/>
     </div>

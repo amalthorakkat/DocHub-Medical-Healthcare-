@@ -199,3 +199,35 @@ input:focus-visible,
     height: 12rem;
   }
 }
+
+
+/* lenis smooth scroll  */
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling {
+  /* optional styles for when the user is scrolling */
+}
+
+
+/* transition  */
+
+.transition-button {
+  opacity: 0;
+  transform: translateY(-20px);
+}

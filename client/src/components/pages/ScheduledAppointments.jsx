@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchConfirmedAppointments } from "../../redux/slices/appointmentSlice";
@@ -17,8 +15,10 @@ import { toast } from "react-hot-toast";
 import DocPlaceholder from "../../assets/doc_placeholder.png";
 import Lottie from "lottie-react";
 import MedicineOnline from "../../assets/lottie/medicineonline.json";
-import { useLocation } from 'react-router-dom'
- 
+import { useLocation } from "react-router-dom";
+import Transition from "../../animations/Transition";
+import FadeContent from "../../animations/FadeContent";
+
 const ScheduledAppointments = () => {
   const dispatch = useDispatch();
   const { confirmedAppointments, loading, error } = useSelector(
@@ -31,7 +31,7 @@ const ScheduledAppointments = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [doctorSuggestions, setDoctorSuggestions] = useState([]);
   const fetchRef = useRef(false);
-  const location = useLocation()
+  const location = useLocation();
 
   // Prevent background scrolling when modal is open
   useEffect(() => {
@@ -178,35 +178,34 @@ const ScheduledAppointments = () => {
     });
   };
 
-
   const containerClasses = `max-w-6xl mx-auto mb-8 pb-[50px] ${
     location.pathname === "/scheduled-appointments" ? "pt-[140px]" : ""
   }`;
-
-
 
   return (
     <div className={containerClasses}>
       {/* Minimal Header */}
 
-      <div className="flex items-center justify-between pb-10 pt-20 ">
-        <div className="flex items-center space-x-3">
-          <div className="w-1 h-6 bg-gradient-to-b from-[#F7971E] to-[#FFB347] rounded-full"></div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">
-            Scheduled Appointments
-          </h1>
-        </div>
+      <Transition distance={50} duration={1.5} delay={0.3}>
+        <div className="flex items-center justify-between pb-10 pt-20 ">
+          <div className="flex items-center space-x-3">
+            <div className="w-1 h-6 bg-gradient-to-b from-[#F7971E] to-[#FFB347] rounded-full"></div>
+            <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">
+              Scheduled Appointments
+            </h1>
+          </div>
 
-        {/* Button to Open Modal */}
-        <div className="flex items-center justify-center">
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-[#F7971E] text-white px-4 py-2 rounded-lg hover:bg-[#FFB347] transition-colors duration-200"
-          >
-            View All Appointments
-          </button>
+          {/* Button to Open Modal */}
+          <div className="flex items-center justify-center">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-[#F7971E] text-white px-4 py-2 rounded-lg hover:bg-[#FFB347] transition-colors duration-200"
+            >
+              View All Appointments
+            </button>
+          </div>
         </div>
-      </div>
+      </Transition>
 
       {/* Loading State - Minimal */}
       {loading && (
@@ -240,119 +239,128 @@ const ScheduledAppointments = () => {
           console.warn("Missing doctorId for appointment:", appointment._id);
         }
         return (
-          <div
-            key={appointment._id}
-            className="bg-white border border-orange-100 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden mb-4 group"
-            style={{
-              animationDelay: `${index * 100}ms`,
-              animation: "fadeIn 0.5s ease-out forwards",
-            }}
+          <FadeContent
+            blur={true}
+            duration={800}
+            delay={0}
+            easing="ease-out"
+            threshold={0.2}
+            initialOpacity={0}
           >
-            <div className="flex flex-col md:grid md:grid-cols-3 gap-0">
-              {/* Doctor Image - Compact */}
-              <div className="flex items-center justify-center md:col-span-1 p-4 bg-gradient-to-br from-orange-50 to-white">
-                <div className="relative group-hover:scale-105 transition-transform duration-200">
-                  <img
-                    className="w-[120px] h-[120px] object-cover object-center rounded-lg shadow-sm border-2 border-white"
-                    src={
-                      appointment.doctorId?.profilePic
-                        ? `http://localhost:5000${appointment.doctorId.profilePic}`
-                        : DocPlaceholder
-                    }
-                    alt={appointment.doctorId?.name || "Unknown Doctor"}
-                    onError={(e) => {
-                      console.error("Image load error for appointment:", {
-                        appointmentId: appointment._id,
-                        doctorId: appointment.doctorId?._id,
-                        profilePic: appointment.doctorId?.profilePic,
-                      });
-                      e.target.src = DocPlaceholder;
-                    }}
-                  />
-                  <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-1 shadow-sm">
-                    <CheckCircle className="w-3 h-3 text-white" />
+            <div
+              key={appointment._id}
+              className="bg-white border border-orange-100 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden mb-4 group"
+              style={{
+                animationDelay: `${index * 100}ms`,
+                animation: "fadeIn 0.5s ease-out forwards",
+              }}
+            >
+              <div className="flex flex-col md:grid md:grid-cols-3 gap-0">
+                {/* Doctor Image - Compact */}
+                <div className="flex items-center justify-center md:col-span-1 p-4 bg-gradient-to-br from-orange-50 to-white">
+                  <div className="relative group-hover:scale-105 transition-transform duration-200">
+                    <img
+                      className="w-[120px] h-[120px] object-cover object-center rounded-lg shadow-sm border-2 border-white"
+                      src={
+                        appointment.doctorId?.profilePic
+                          ? `http://localhost:5000${appointment.doctorId.profilePic}`
+                          : DocPlaceholder
+                      }
+                      alt={appointment.doctorId?.name || "Unknown Doctor"}
+                      onError={(e) => {
+                        console.error("Image load error for appointment:", {
+                          appointmentId: appointment._id,
+                          doctorId: appointment.doctorId?._id,
+                          profilePic: appointment.doctorId?.profilePic,
+                        });
+                        e.target.src = DocPlaceholder;
+                      }}
+                    />
+                    <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-1 shadow-sm">
+                      <CheckCircle className="w-3 h-3 text-white" />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Content - Compact */}
-              <div className="md:col-span-2 p-2 sm:p-3 md:p-4">
-                <div className="flex flex-col md:flex-row md:justify-between gap-2 md:gap-4">
-                  <div className="flex-1 space-y-2">
-                    {/* Doctor Info - Minimal */}
-                    <div>
-                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 group-hover:text-[#F7971E] transition-colors duration-200">
-                        {appointment.doctorId?.name || "Unknown Doctor"}
-                      </h3>
-                      <div className="flex items-center space-x-2 text-gray-600 mb-1">
-                        <User className="w-3 h-3" />
-                        <span className="font-medium text-xs">
-                          {appointment.doctorId?.specialty || "N/A"}
-                        </span>
+                {/* Content - Compact */}
+                <div className="md:col-span-2 p-2 sm:p-3 md:p-4">
+                  <div className="flex flex-col md:flex-row md:justify-between gap-2 md:gap-4">
+                    <div className="flex-1 space-y-2">
+                      {/* Doctor Info - Minimal */}
+                      <div>
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 group-hover:text-[#F7971E] transition-colors duration-200">
+                          {appointment.doctorId?.name || "Unknown Doctor"}
+                        </h3>
+                        <div className="flex items-center space-x-2 text-gray-600 mb-1">
+                          <User className="w-3 h-3" />
+                          <span className="font-medium text-xs">
+                            {appointment.doctorId?.specialty || "N/A"}
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2 text-gray-500">
+                          <Award className="w-3 h-3" />
+                          <span className="text-xs">
+                            Experience:{" "}
+                            {appointment.doctorId?.experience || "N/A"}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-2 text-gray-500">
-                        <Award className="w-3 h-3" />
-                        <span className="text-xs">
-                          Experience:{" "}
-                          {appointment.doctorId?.experience || "N/A"}
-                        </span>
-                      </div>
-                    </div>
 
-                    {/* Appointment Details - Compact */}
-                    <div className="border-t border-gray-200 pt-2">
-                      <h4 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
-                        Appointment Details
-                      </h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-                        <div className="flex items-center space-x-2">
-                          <Calendar className="w-3 h-3 text-gray-400" />
-                          <div>
-                            <div className="text-xs text-gray-500 uppercase">
-                              Date
+                      {/* Appointment Details - Compact */}
+                      <div className="border-t border-gray-200 pt-2">
+                        <h4 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+                          Appointment Details
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                          <div className="flex items-center space-x-2">
+                            <Calendar className="w-3 h-3 text-gray-400" />
+                            <div>
+                              <div className="text-xs text-gray-500 uppercase">
+                                Date
+                              </div>
+                              <div className="font-medium text-gray-900 text-xs">
+                                {formatDate(appointment.date)}
+                              </div>
                             </div>
-                            <div className="font-medium text-gray-900 text-xs">
-                              {formatDate(appointment.date)}
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Clock className="w-3 h-3 text-gray-400" />
+                            <div>
+                              <div className="text-xs text-gray-500 uppercase">
+                                Time
+                              </div>
+                              <div className="font-medium text-gray-900 text-xs">
+                                {formatTime(appointment.time)}
+                              </div>
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <Clock className="w-3 h-3 text-gray-400" />
-                          <div>
-                            <div className="text-xs text-gray-500 uppercase">
-                              Time
-                            </div>
-                            <div className="font-medium text-gray-900 text-xs">
-                              {formatTime(appointment.time)}
-                            </div>
-                          </div>
-                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Payment Section - Compact */}
-                  <div className="md:min-w-[140px] lg:min-w-[160px] md:pl-4 lg:pl-4 md:border-l border-gray-200">
-                    <div className="text-left md:text-right mb-3">
-                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
-                        Consultation Fee
+                    {/* Payment Section - Compact */}
+                    <div className="md:min-w-[140px] lg:min-w-[160px] md:pl-4 lg:pl-4 md:border-l border-gray-200">
+                      <div className="text-left md:text-right mb-3">
+                        <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+                          Consultation Fee
+                        </div>
+                        <div className="text-lg sm:text-xl font-bold text-gray-900">
+                          ${appointment.fee || "N/A"}.00
+                        </div>
+                        <div className="text-xs text-gray-500">Per session</div>
                       </div>
-                      <div className="text-lg sm:text-xl font-bold text-gray-900">
-                        ${appointment.fee || "N/A"}.00
-                      </div>
-                      <div className="text-xs text-gray-500">Per session</div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="w-full bg-green-100 text-green-700 px-2 sm:px-3 py-1 sm:py-1.5 rounded-md font-medium flex items-center justify-center space-x-2 text-xs">
-                        <CheckCircle className="w-3 h-3" />
-                        <span>Payment Completed</span>
+                      <div className="space-y-2">
+                        <div className="w-full bg-green-100 text-green-700 px-2 sm:px-3 py-1 sm:py-1.5 rounded-md font-medium flex items-center justify-center space-x-2 text-xs">
+                          <CheckCircle className="w-3 h-3" />
+                          <span>Payment Completed</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </FadeContent>
         );
       })}
 

@@ -34,7 +34,7 @@ const Filter = () => {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-10  ">
         {categories.map((cat, index) => (
-          <Transition distance={150} delay={0.3} duration={1.5}>
+          <Transition distance={150} delay={0.3} duration={1.5} threshold={-0.1} >
             <div
               key={index}
               className="cursor-pointer flex flex-col items-center justify-center gap-2 hover:scale-105 transition"

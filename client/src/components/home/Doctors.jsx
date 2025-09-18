@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../utils/axiosInstance";
 import toast from "react-hot-toast";
 import Transition from "../../animations/Transition";
+import FadeContent from "../../animations/FadeContent";
 
 const Doctors = () => {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ const Doctors = () => {
   return (
     <div className="px-[15px] pb-10  ">
       <div className=" flex items-center justify-center flex-col ">
-        <Transition distance={150} delay={0.3} duration={1.5}>
+        <Transition distance={150} delay={0.3} duration={1.5} threshold={-0.1} >
           <h1 className="font-medium text-[30px] text-center pt-20 px-6 pb-4">
             Explore by Specialties
           </h1>
@@ -39,7 +40,7 @@ const Doctors = () => {
           </p>
         </Transition>
       </div>
-      <Transition distance={150} delay={0.3} duration={1.5}>
+      <FadeContent blur={true} delay={200}>
         <div className="flex justify-center ">
           <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
             {loading ? (
@@ -88,7 +89,7 @@ const Doctors = () => {
             More
           </button>
         </div>
-      </Transition>
+      </FadeContent>
     </div>
   );
 };
