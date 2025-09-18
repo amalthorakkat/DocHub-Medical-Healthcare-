@@ -153,7 +153,7 @@ const Header = () => {
                 )}
                 {isProfileOpen && (
                   <div
-                    className="absolute top-full right-0 mt-3 w-56 bg-gradient-to-br from-white/95 to-gray-100/95 backdrop-blur-lg border border-gray-200 rounded-xl shadow-xl z-50 transform transition-all duration-300 ease-in-out opacity-0 translate-y-2 animate-dropdown"
+                    className="absolute top-full right-0 mt-3  w-72 bg-gradient-to-br from-white/95 to-gray-100/95 backdrop-blur-lg border border-gray-200 rounded-xl shadow-xl z-50 transform transition-all duration-300 ease-in-out opacity-0 translate-y-2 animate-dropdown"
                     style={{
                       animation: isProfileOpen
                         ? "dropdown-open 0.3s forwards"
@@ -211,7 +211,7 @@ const Header = () => {
 
       {isOpen && (
         <div
-          className="absolute top-full right-5 mt-3 w-64 bg-gradient-to-br from-white/95 to-gray-100/95 backdrop-blur-lg border border-gray-200 rounded-xl shadow-xl md:hidden z-50 transform transition-all duration-300 ease-in-out"
+          className="absolute top-full right-5 mt-3 w-70 bg-gradient-to-br from-white/95 to-gray-100/95 backdrop-blur-lg border border-gray-200 rounded-xl shadow-xl md:hidden z-50 transform transition-all duration-300 ease-in-out"
           ref={dropdownRef}
         >
           <ul className="flex flex-col p-3 space-y-2">
