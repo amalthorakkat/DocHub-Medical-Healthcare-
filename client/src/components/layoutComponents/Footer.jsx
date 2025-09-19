@@ -1,10 +1,14 @@
 import React from "react";
 import Logo from '../../assets/DocHub.jpg'
+import Carousel from "../home/Carousel";
 
 const Footer = () => {
   return (
     <footer className="bg-[#272b32] text-white mt-auto">
       <div className="max-w-7xl mx-auto px-4 py-8">
+        <div>
+          <Carousel/>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* DocHub Brand */}
           <div className="col-span-1 md:col-span-1">

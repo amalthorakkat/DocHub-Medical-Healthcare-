@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { createAppointment } from "../../redux/slices/appointmentSlice";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  createAppointment,
+  fetchAbsences,
+} from "../../redux/slices/appointmentSlice";
 import axiosInstance from "../../utils/axiosInstance";
 import toast from "react-hot-toast";
 import {
@@ -20,6 +23,7 @@ const DoctorDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { absences } = useSelector((state) => state.appointments);
   const [doctor, setDoctor] = useState(null);
   const [relatedDoctors, setRelatedDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +31,11 @@ const DoctorDetails = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [showCalendar, setShowCalendar] = useState(false);
-  const [currentWeekStart, setCurrentWeekStart] = useState(new Date());
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow;
+  });
 
   useEffect(() => {
     const fetchDoctor = async () => {
@@ -68,7 +76,8 @@ const DoctorDetails = () => {
       }
     };
     fetchDoctor();
-  }, [id, navigate]);
+    dispatch(fetchAbsences({ doctorId: id }));
+  }, [id, navigate, dispatch]);
 
   useEffect(() => {
     const fetchRelatedDoctors = async () => {
@@ -125,7 +134,7 @@ const DoctorDetails = () => {
       }
     };
     fetchRelatedDoctors();
-  }, [doctor?.specialty, id]); // Update dependency to doctor.specialty
+  }, [doctor?.specialty, id]);
 
   const generateTimeSlots = () => {
     const times = [];
@@ -168,7 +177,64 @@ const DoctorDetails = () => {
     );
   };
 
+  const isAbsent = (date) => {
+    const formattedDate = date.toISOString().split("T")[0];
+    return absences.some(
+      (absence) => absence.date === formattedDate && absence.doctorId === id
+    );
+  };
+
+  const getTomorrowDate = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split("T")[0];
+  };
+
   const handleDateSelect = (date) => {
+    if (isToday(date)) {
+      toast.error("Cannot select today's date", {
+        position: "bottom-right",
+        duration: 4000,
+        style: {
+          background: "#fff",
+          color: "#1F2937",
+          border: "1px solid #DC2626",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+          borderRadius: "8px",
+          padding: "12px 16px",
+          fontSize: "14px",
+          fontWeight: "500",
+        },
+        iconTheme: {
+          primary: "#DC2626",
+          secondary: "#fff",
+        },
+        className: "toast-slide-in",
+      });
+      return;
+    }
+    if (isAbsent(date)) {
+      toast.error("Doctor is unavailable on this date", {
+        position: "bottom-right",
+        duration: 4000,
+        style: {
+          background: "#fff",
+          color: "#1F2937",
+          border: "1px solid #DC2626",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+          borderRadius: "8px",
+          padding: "12px 16px",
+          fontSize: "14px",
+          fontWeight: "500",
+        },
+        iconTheme: {
+          primary: "#DC2626",
+          secondary: "#fff",
+        },
+        className: "toast-slide-in",
+      });
+      return;
+    }
     const formattedDate = date.toISOString().split("T")[0];
     setSelectedDate(formattedDate);
     setSelectedTime("");
@@ -176,7 +242,57 @@ const DoctorDetails = () => {
   };
 
   const handleCalendarSelect = (e) => {
-    setSelectedDate(e.target.value);
+    const selected = e.target.value;
+    const today = new Date().toISOString().split("T")[0];
+    if (selected === today) {
+      toast.error("Cannot select today's date", {
+        position: "bottom-right",
+        duration: 4000,
+        style: {
+          background: "#fff",
+          color: "#1F2937",
+          border: "1px solid #DC2626",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+          borderRadius: "8px",
+          padding: "12px 16px",
+          fontSize: "14px",
+          fontWeight: "500",
+        },
+        iconTheme: {
+          primary: "#DC2626",
+          secondary: "#fff",
+        },
+        className: "toast-slide-in",
+      });
+      return;
+    }
+    if (
+      absences.some(
+        (absence) => absence.date === selected && absence.doctorId === id
+      )
+    ) {
+      toast.error("Doctor is unavailable on this date", {
+        position: "bottom-right",
+        duration: 4000,
+        style: {
+          background: "#fff",
+          color: "#1F2937",
+          border: "1px solid #DC2626",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+          borderRadius: "8px",
+          padding: "12px 16px",
+          fontSize: "14px",
+          fontWeight: "500",
+        },
+        iconTheme: {
+          primary: "#DC2626",
+          secondary: "#fff",
+        },
+        className: "toast-slide-in",
+      });
+      return;
+    }
+    setSelectedDate(selected);
     setSelectedTime("");
     setShowCalendar(false);
   };
@@ -188,7 +304,13 @@ const DoctorDetails = () => {
   const navigateWeek = (direction) => {
     const newDate = new Date(currentWeekStart);
     newDate.setDate(newDate.getDate() + (direction === "next" ? 7 : -7));
-    setCurrentWeekStart(newDate);
+    if (newDate < new Date()) {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      setCurrentWeekStart(tomorrow);
+    } else {
+      setCurrentWeekStart(newDate);
+    }
   };
 
   const formatTimeDisplay = (timeValue) => {
@@ -285,7 +407,7 @@ const DoctorDetails = () => {
         createAppointment(appointmentData)
       ).unwrap();
       console.log("Appointment created:", response);
-      toast.success("Appointment booked successfully! Proceed to payment.", {
+      toast.success("Proceed to payment.", {
         position: "bottom-right",
         duration: 3000,
         style: {
@@ -498,12 +620,15 @@ const DoctorDetails = () => {
                         <div
                           key={index}
                           onClick={() => handleDateSelect(date)}
-                          className={`p-2 sm:p-3 text-center rounded-xl cursor-pointer transition-all duration-200 border-2 hover:scale-105 ${
-                            selectedDate === date.toISOString().split("T")[0]
-                              ? "bg-gradient-to-r from-indigo-600 to-indigo-600 text-white border-indigo-600 shadow-lg scale-105"
+                          className={`p-2 sm:p-3 text-center rounded-xl transition-all duration-200 border-2 ${
+                            isAbsent(date)
+                              ? "bg-red-100 border-red-200 text-red-600 cursor-not-allowed"
+                              : selectedDate ===
+                                date.toISOString().split("T")[0]
+                              ? "bg-gradient-to-r from-indigo-600 to-indigo-600 text-white border-indigo-600 shadow-lg scale-105 cursor-pointer"
                               : isToday(date)
-                              ? "bg-indigo-50 border-indigo-200 text-indigo-600"
-                              : "border-gray-200 hover:border-indigo-300 hover:bg-indigo-50"
+                              ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
+                              : "border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 cursor-pointer hover:scale-105"
                           }`}
                         >
                           <div className="text-xs font-medium opacity-80">
@@ -542,7 +667,7 @@ const DoctorDetails = () => {
                           value={selectedDate}
                           onChange={handleCalendarSelect}
                           className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
-                          min={new Date().toISOString().split("T")[0]}
+                          min={getTomorrowDate()}
                         />
                       </div>
                     )}

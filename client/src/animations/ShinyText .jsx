@@ -1,53 +1,83 @@
+
+
 // import React from "react";
 
-// const ShinyText = ({ text, disabled = false, speed = 5, className = "" }) => {
+// const ShinyText = ({ text, disabled = false, speed = 5, className = '' }) => {
 //   return (
 //     <div
-//       className={`inline-block text-[#b5b5b5a4] ${
-//         disabled ? "" : "animate-shine"
-//       } ${className}`}
+//       className={`inline-block ${className}`}
 //       style={{
-//         backgroundImage:
-//           "linear-gradient(120deg, rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0) 60%)",
-//         backgroundSize: "200% 100%",
-//         backgroundClip: "text",
-//         WebkitBackgroundClip: "text",
-//         color: "transparent", // Required for background-clip to show through
-//         animation: disabled ? "none" : `shine ${speed}s linear infinite`, // Apply animation directly
+//         backgroundImage: disabled
+//           ? 'none'
+//           : 'linear-gradient(120deg, rgba(0, 0, 0, 0.3) 40%, rgba(255, 255, 255, 0.8) 50%, rgba(0, 0, 0, 0.3) 60%)',
+//         backgroundSize: '200% 100%',
+//         backgroundClip: disabled ? 'initial' : 'text',
+//         WebkitBackgroundClip: disabled ? 'initial' : 'text',
+//         color: disabled ? '#3C3743' : 'transparent',
+//         animation: disabled ? 'none' : `shine ${speed}s linear infinite`,
 //       }}
 //     >
 //       {text}
+//       <style jsx="true">{`
+//         @keyframes shine {
+//           0% {
+//             background-position: 200%;
+//           }
+//           100% {
+//             background-position: -200%;
+//           }
+//         }
+//       `}</style>
 //     </div>
 //   );
 // };
 
 // export default ShinyText;
 
+
 import React from "react";
 
 const ShinyText = ({ text, disabled = false, speed = 5, className = '' }) => {
   return (
     <div
-      className={`inline-block ${className}`}
+      className={`inline-block font-bold ${className}`}
       style={{
-        backgroundImage: disabled
-          ? 'none'
-          : 'linear-gradient(120deg, rgba(0, 0, 0, 0.3) 40%, rgba(255, 255, 255, 0.8) 50%, rgba(0, 0, 0, 0.3) 60%)', // White shine
-        backgroundSize: '200% 100%',
-        backgroundClip: disabled ? 'initial' : 'text',
-        WebkitBackgroundClip: disabled ? 'initial' : 'text',
-        color: disabled ? '#3C3743' : 'transparent', // Text color #3C3743 when disabled
-        animation: disabled ? 'none' : `shine ${speed}s linear infinite`,
+        position: "relative",
+        display: "inline-block",
+        color: disabled ? "#A0A0A0" : "#ffffff", // text stays white
+        overflow: "hidden",
       }}
     >
-      {text}
-      <style jsx>{`
+      <span
+        style={{
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
+        {text}
+      </span>
+      {!disabled && (
+        <span
+          style={{
+            position: "absolute",
+            top: 0,
+            left: "-100%",
+            height: "100%",
+            width: "100%",
+            background: "linear-gradient(120deg, transparent 40%, #272B32 50%, transparent 60%)",
+            animation: `shine ${speed}s linear infinite`,
+            zIndex: 2,
+            mixBlendMode: "multiply", // blends dark streak with white text
+          }}
+        />
+      )}
+      <style jsx="true">{`
         @keyframes shine {
           0% {
-            background-position: 200%;
+            left: -100%;
           }
           100% {
-            background-position: -200%;
+            left: 100%;
           }
         }
       `}</style>

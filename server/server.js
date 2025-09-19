@@ -4,8 +4,10 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const userRoutes = require("./routes/userRoutes");
 const appointmentRoutes = require("./routes/appointmentRoutes");
+const absenceRoutes = require("./routes/absenceRoutes");
 require("./models/UserModel");
 require("./models/AppointmentModel");
+require("./models/AbsenceModel");
 
 const app = express();
 
@@ -35,6 +37,7 @@ connectDB();
 // Routes
 app.use("/api/users", userRoutes);
 app.use("/api/appointments", appointmentRoutes);
+app.use("/api/absences", absenceRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

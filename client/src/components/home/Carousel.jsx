@@ -33,24 +33,24 @@ const Carousel = () => {
   return (
     <div className="mt-10 mb-10">
       <FadeContent blur={true} delay={200}>
-      <h1 className="text-center mb-[-30px] pt-[30px]">
+      <h1 className="text-center  ">
         <ShinyText
           text="A MERN Stack Based Project"
           speed={4}
           className="text-2xl font-medium"
         />
       </h1>
-      <div className="flex items-center justify-center w-full max-w-[1000px] h-[200px] mx-auto relative overflow-hidden">
+      <div className="flex items-center justify-center w-full max-w-[1000px] h-[100px] mx-auto relative overflow-hidden">
         <LogoLoop
           logos={techLogos}
           speed={120}
           direction="left"
-          logoHeight={48}
+          logoHeight={28}
           gap={40}
           pauseOnHover
           scaleOnHover
           fadeOut
-          fadeOutColor="#ffffff"
+          fadeOutColor="#272B32"
           ariaLabel="Technology partners"
         />
       </div>

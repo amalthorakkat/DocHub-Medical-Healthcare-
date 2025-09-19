@@ -1,5 +1,6 @@
 
 
+
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Provider, useSelector } from "react-redux";
@@ -18,11 +19,21 @@ import ScheduledAppointments from "./components/pages/ScheduledAppointments";
 import ScrollToTop from "./layout/ScrollToTop";
 import About from "./components/pages/about/About";
 import Contact from "./components/pages/contactUs/Contact";
+import DoctorDashboard from "./components/doctor/DoctorDashboard";
 
 // Protected Route for Admin
 const ProtectedAdminRoute = ({ children }) => {
   const { user } = useSelector((state) => state.auth);
   if (!user || user.role !== "admin") {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
+
+// Protected Route for Doctor
+const ProtectedDoctorRoute = ({ children }) => {
+  const { user } = useSelector((state) => state.auth);
+  if (!user || user.role !== "doctor") {
     return <Navigate to="/login" replace />;
   }
   return children;
@@ -78,7 +89,7 @@ const App = () => {
           className: "toast-slide-in",
         }}
       />
-      <ScrollToTop/>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<UserLayout />}>
           <Route index element={<Home />} />
@@ -90,8 +101,8 @@ const App = () => {
             path="/scheduled-appointments"
             element={<ScheduledAppointments />}
           />
-          <Route path="/about" element={<About/>} />
-          <Route path="/contact" element={<Contact/>} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
           <Route
             path="login"
             element={
@@ -114,6 +125,14 @@ const App = () => {
               <ProtectedAdminRoute>
                 <AdminDashboard />
               </ProtectedAdminRoute>
+            }
+          />
+          <Route
+            path="/doctor-dashboard"
+            element={
+              <ProtectedDoctorRoute>
+                <DoctorDashboard />
+              </ProtectedDoctorRoute>
             }
           />
         </Route>

@@ -1,3 +1,4 @@
+
 import React from "react";
 import Gp from "../../assets/General_physician.svg";
 import Gc from "../../assets/Gynecologist.svg";
@@ -18,27 +19,27 @@ const Filter = () => {
   ];
 
   return (
-    <div className="flex flex-col items-center justify-center  px-[15px] pb-10  ">
-      <Transition distance={150} delay={0.3} duration={1.5} threshold={-0.1} >
-        <h1 className="font-medium text-[30px] text-center  px-6 pb-4">
+    <div className="flex flex-col items-center justify-center px-[15px] pt-20 ">
+      <Transition distance={150} delay={0.3} duration={1.5} threshold={-0.1}>
+        <h1 className="font-medium text-[30px] text-center px-6 pb-4">
           Find by Speciality
         </h1>
-
         <p className="text-center max-w-[500px] pb-8">
           Simply browse through our extensive list of trusted doctors, schedule
           your appointment hassle-free.
         </p>
       </Transition>
 
-      {/* grid section */}
-
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-10  ">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-10">
         {categories.map((cat, index) => (
-          <Transition distance={150} delay={0.3} duration={1.5} threshold={-0.1} >
-            <div
-              key={index}
-              className="cursor-pointer flex flex-col items-center justify-center gap-2 hover:scale-105 transition"
-            >
+          <Transition
+            key={cat.name} // Use cat.name instead of index for a stable key
+            distance={150}
+            delay={0.3}
+            duration={1.5}
+            threshold={-0.1}
+          >
+            <div className="cursor-pointer flex flex-col items-center justify-center gap-2 hover:scale-105 transition">
               <img
                 src={cat.img}
                 alt={cat.name}
