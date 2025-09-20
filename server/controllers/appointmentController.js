@@ -404,16 +404,26 @@ exports.getConfirmedAppointments = async (req, res) => {
   }
 };
 
+
 exports.getConfirmedAppointmentsCount = async (req, res) => {
   try {
-    const doctorId = req.user._id;
-    console.log("Fetching confirmed appointments count for doctor:", {
-      doctorId,
+    const userId = req.user._id;
+    const userRole = req.user.role; // Assuming role is stored in req.user
+    console.log("Fetching confirmed appointments count for:", {
+      userId,
+      userRole,
     });
-    const count = await Appointment.countDocuments({
-      doctorId,
-      status: "confirmed",
-    });
+
+    let query;
+    if (userRole === "patient") {
+      query = { patientId: userId, status: "confirmed" };
+    } else if (userRole === "doctor") {
+      query = { doctorId: userId, status: "confirmed" };
+    } else {
+      throw new Error("Invalid user role");
+    }
+
+    const count = await Appointment.countDocuments(query);
     console.log("Fetched confirmed appointments count:", { count });
     res.send({ count });
   } catch (error) {

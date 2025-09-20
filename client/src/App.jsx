@@ -1,6 +1,3 @@
-
-
-
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Provider, useSelector } from "react-redux";
@@ -20,6 +17,7 @@ import ScrollToTop from "./layout/ScrollToTop";
 import About from "./components/pages/about/About";
 import Contact from "./components/pages/contactUs/Contact";
 import DoctorDashboard from "./components/doctor/DoctorDashboard";
+import PatientBio from "./components/doctor/PatientBio";
 
 // Protected Route for Admin
 const ProtectedAdminRoute = ({ children }) => {
@@ -132,6 +130,14 @@ const App = () => {
             element={
               <ProtectedDoctorRoute>
                 <DoctorDashboard />
+              </ProtectedDoctorRoute>
+            }
+          />
+          <Route
+            path="/patient/details/:id"
+            element={
+              <ProtectedDoctorRoute>
+                <PatientBio />
               </ProtectedDoctorRoute>
             }
           />
