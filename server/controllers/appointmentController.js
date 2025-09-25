@@ -1,3 +1,5 @@
+
+
 // const Appointment = require("../models/AppointmentModel");
 // const User = require("../models/UserModel");
 // const Absence = require("../models/AbsenceModel");
@@ -125,6 +127,7 @@
 //     res.status(400).send({ error: error.message });
 //   }
 // };
+
 
 // exports.getConfirmedAppointmentsCount = async (req, res) => {
 //   try {
@@ -333,11 +336,14 @@
 //   }
 // };
 
+
+
 const Appointment = require("../models/AppointmentModel");
 const User = require("../models/UserModel");
 const Absence = require("../models/AbsenceModel");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const nodemailer = require("nodemailer"); // Added for email sending functionality
+const generateAppointmentConfirmationEmail = require("../templates/appointmentConfirmationEmail"); // Added to import email template
 
 // Create a new appointment
 exports.createAppointment = async (req, res) => {
@@ -601,7 +607,7 @@ exports.createCheckoutSession = async (req, res) => {
   }
 };
 
-// Added helper function to send confirmation email with enhanced logging
+// Added helper function to send confirmation email with imported HTML template
 async function sendConfirmationEmail(appointment) {
   try {
     // Validate environment variables
@@ -647,22 +653,16 @@ async function sendConfirmationEmail(appointment) {
     await transporter.verify();
     console.log("Nodemailer transporter verified successfully");
 
-    // Define email content with appointment details
+    // Generate HTML email content using imported template
+    const htmlTemplate = generateAppointmentConfirmationEmail(appointment);
+
+    // Define email content with HTML template and fallback text
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: appointment.patientId.email,
       subject: "Your Appointment Has Been Successfully Booked",
-      text: `Dear ${appointment.patientId.name},
-
-Your appointment has been successfully booked.
-
-Details:
-- Patient Name: ${appointment.patientId.name}
-- Paid Amount: $${appointment.fee}
-- Appointed Date: ${appointment.date} at ${appointment.time}
-- Doctor: Dr. ${appointment.doctorId.name}
-
-Thank you for booking with us!`,
+      text: `Dear ${appointment.patientId.name},\n\nYour appointment has been successfully booked.\n\nDetails:\n- Patient Name: ${appointment.patientId.name}\n- Paid Amount: $${appointment.fee}\n- Appointed Date: ${appointment.date} at ${appointment.time}\n- Doctor: Dr. ${appointment.doctorId.name}\n\nThank you for booking with us!`, // Fallback for clients that don't support HTML
+      html: htmlTemplate, // HTML template from imported function
     };
 
     // Send the email
