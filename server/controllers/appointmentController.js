@@ -1,5 +1,6 @@
 // const Appointment = require("../models/AppointmentModel");
 // const User = require("../models/UserModel");
+// const Absence = require("../models/AbsenceModel");
 // const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 // exports.createAppointment = async (req, res) => {
@@ -23,6 +24,12 @@
 //     if (!doctor || doctor.role !== "doctor") {
 //       console.error("Doctor not found or invalid role:", { doctorId, doctor });
 //       throw new Error("Doctor not found");
+//     }
+
+//     const absence = await Absence.findOne({ doctorId, date });
+//     if (absence) {
+//       console.error("Doctor is absent on this date:", { doctorId, date });
+//       throw new Error("Doctor is unavailable on the selected date");
 //     }
 
 //     const appointment = new Appointment({
@@ -49,14 +56,25 @@
 
 // exports.getPendingAppointments = async (req, res) => {
 //   try {
-//     const patientId = req.user._id;
-//     console.log("Fetching pending appointments for:", { patientId });
-//     const appointments = await Appointment.find({
-//       patientId,
-//       status: "pending",
-//     }).populate(
-//       "doctorId",
-//       "name specialty profilePic appointmentFee experience"
+//     const userId = req.user._id;
+//     const userRole = req.user.role; // Assuming role is stored in req.user
+//     console.log("Fetching pending appointments for:", { userId, userRole });
+
+//     let query;
+//     let populateField;
+//     if (userRole === "patient") {
+//       query = { patientId: userId, status: "pending" };
+//       populateField = "doctorId";
+//     } else if (userRole === "doctor") {
+//       query = { doctorId: userId, status: "pending" };
+//       populateField = "patientId";
+//     } else {
+//       throw new Error("Invalid user role");
+//     }
+
+//     const appointments = await Appointment.find(query).populate(
+//       populateField,
+//       "name email profilePic specialty appointmentFee experience"
 //     );
 //     console.log(
 //       "Fetched pending appointments:",
@@ -74,14 +92,25 @@
 
 // exports.getConfirmedAppointments = async (req, res) => {
 //   try {
-//     const patientId = req.user._id;
-//     console.log("Fetching confirmed appointments for:", { patientId });
-//     const appointments = await Appointment.find({
-//       patientId,
-//       status: "confirmed",
-//     }).populate(
-//       "doctorId",
-//       "name specialty profilePic appointmentFee experience"
+//     const userId = req.user._id;
+//     const userRole = req.user.role; // Assuming role is stored in req.user
+//     console.log("Fetching confirmed appointments for:", { userId, userRole });
+
+//     let query;
+//     let populateField;
+//     if (userRole === "patient") {
+//       query = { patientId: userId, status: "confirmed" };
+//       populateField = "doctorId";
+//     } else if (userRole === "doctor") {
+//       query = { doctorId: userId, status: "confirmed" };
+//       populateField = "patientId";
+//     } else {
+//       throw new Error("Invalid user role");
+//     }
+
+//     const appointments = await Appointment.find(query).populate(
+//       populateField,
+//       "name email profilePic specialty appointmentFee experience"
 //     );
 //     console.log(
 //       "Fetched confirmed appointments:",
@@ -99,12 +128,23 @@
 
 // exports.getConfirmedAppointmentsCount = async (req, res) => {
 //   try {
-//     const patientId = req.user._id;
-//     console.log("Fetching confirmed appointments count for:", { patientId });
-//     const count = await Appointment.countDocuments({
-//       patientId,
-//       status: "confirmed",
+//     const userId = req.user._id;
+//     const userRole = req.user.role; // Assuming role is stored in req.user
+//     console.log("Fetching confirmed appointments count for:", {
+//       userId,
+//       userRole,
 //     });
+
+//     let query;
+//     if (userRole === "patient") {
+//       query = { patientId: userId, status: "confirmed" };
+//     } else if (userRole === "doctor") {
+//       query = { doctorId: userId, status: "confirmed" };
+//     } else {
+//       throw new Error("Invalid user role");
+//     }
+
+//     const count = await Appointment.countDocuments(query);
 //     console.log("Fetched confirmed appointments count:", { count });
 //     res.send({ count });
 //   } catch (error) {
@@ -119,13 +159,17 @@
 // exports.deleteAppointment = async (req, res) => {
 //   try {
 //     const { id } = req.params;
-//     console.log("Deleting appointment:", { id });
+//     const userId = req.user._id;
+//     console.log("Deleting appointment:", { id, userId });
 //     const appointment = await Appointment.findById(id);
 //     if (!appointment) {
 //       throw new Error("Appointment not found");
 //     }
-//     if (appointment.patientId.toString() !== req.user._id.toString()) {
-//       console.error("Unauthorized attempt:", { id, patientId: req.user._id });
+//     if (
+//       appointment.patientId.toString() !== userId.toString() &&
+//       appointment.doctorId.toString() !== userId.toString()
+//     ) {
+//       console.error("Unauthorized attempt:", { id, userId });
 //       throw new Error("Unauthorized to delete this appointment");
 //     }
 //     await Appointment.findByIdAndDelete(id);
@@ -217,19 +261,30 @@
 
 // exports.confirmAppointment = async (req, res) => {
 //   const { appointmentId } = req.body;
-//   const patientId = req.user._id;
+//   const userId = req.user._id;
+//   const userRole = req.user.role;
 //   try {
-//     console.log("Confirming appointment:", { appointmentId, patientId });
+//     console.log("Confirming appointment:", { appointmentId, userId, userRole });
 
 //     const appointment = await Appointment.findById(appointmentId);
 //     if (!appointment) {
 //       console.error("Appointment not found:", { appointmentId });
 //       throw new Error("Appointment not found");
 //     }
-//     if (appointment.patientId.toString() !== patientId.toString()) {
-//       console.error("Unauthorized attempt:", { appointmentId, patientId });
+
+//     // Allow confirmation if user is the patient or doctor associated with the appointment
+//     if (
+//       appointment.patientId.toString() !== userId.toString() &&
+//       appointment.doctorId.toString() !== userId.toString()
+//     ) {
+//       console.error("Unauthorized attempt:", {
+//         appointmentId,
+//         userId,
+//         userRole,
+//       });
 //       throw new Error("Unauthorized to confirm this appointment");
 //     }
+
 //     if (appointment.status === "confirmed") {
 //       console.log("Appointment already confirmed:", {
 //         appointmentId,
@@ -238,11 +293,12 @@
 //       const updatedAppointment = await Appointment.findById(
 //         appointmentId
 //       ).populate(
-//         "doctorId",
-//         "name specialty profilePic appointmentFee experience"
+//         userRole === "patient" ? "doctorId" : "patientId",
+//         "name email profilePic specialty appointmentFee experience"
 //       );
 //       return res.send({ appointment: updatedAppointment });
 //     }
+
 //     if (appointment.status !== "pending") {
 //       console.error("Invalid appointment status:", {
 //         appointmentId,
@@ -261,8 +317,8 @@
 //     const updatedAppointment = await Appointment.findById(
 //       appointmentId
 //     ).populate(
-//       "doctorId",
-//       "name specialty profilePic appointmentFee experience"
+//       userRole === "patient" ? "doctorId" : "patientId",
+//       "name email profilePic specialty appointmentFee experience"
 //     );
 //     res.send({ appointment: updatedAppointment });
 //   } catch (error) {
@@ -270,7 +326,8 @@
 //       message: error.message,
 //       stack: error.stack,
 //       appointmentId,
-//       patientId,
+//       userId,
+//       userRole,
 //     });
 //     res.status(400).send({ error: error.message });
 //   }
@@ -280,7 +337,9 @@ const Appointment = require("../models/AppointmentModel");
 const User = require("../models/UserModel");
 const Absence = require("../models/AbsenceModel");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const nodemailer = require("nodemailer"); // Added for email sending functionality
 
+// Create a new appointment
 exports.createAppointment = async (req, res) => {
   try {
     const { doctorId, date, time, fee } = req.body;
@@ -332,6 +391,7 @@ exports.createAppointment = async (req, res) => {
   }
 };
 
+// Fetch pending appointments for a user
 exports.getPendingAppointments = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -368,6 +428,7 @@ exports.getPendingAppointments = async (req, res) => {
   }
 };
 
+// Fetch confirmed appointments for a user
 exports.getConfirmedAppointments = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -404,7 +465,7 @@ exports.getConfirmedAppointments = async (req, res) => {
   }
 };
 
-
+// Get count of confirmed appointments
 exports.getConfirmedAppointmentsCount = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -435,6 +496,7 @@ exports.getConfirmedAppointmentsCount = async (req, res) => {
   }
 };
 
+// Delete an appointment
 exports.deleteAppointment = async (req, res) => {
   try {
     const { id } = req.params;
@@ -463,6 +525,7 @@ exports.deleteAppointment = async (req, res) => {
   }
 };
 
+// Create a Stripe checkout session for payment
 exports.createCheckoutSession = async (req, res) => {
   try {
     if (!process.env.STRIPE_SECRET_KEY) {
@@ -538,6 +601,90 @@ exports.createCheckoutSession = async (req, res) => {
   }
 };
 
+// Added helper function to send confirmation email with enhanced logging
+async function sendConfirmationEmail(appointment) {
+  try {
+    // Validate environment variables
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      console.error("Missing email configuration:", {
+        emailUser: process.env.EMAIL_USER ? "Set" : "Not set",
+        emailPass: process.env.EMAIL_PASS ? "Set" : "Not set",
+      });
+      throw new Error("Email configuration missing in environment variables");
+    }
+
+    // Validate recipient email
+    if (!appointment.patientId?.email) {
+      console.error("Invalid or missing patient email:", {
+        appointmentId: appointment._id,
+        patientId: appointment.patientId?._id,
+        email: appointment.patientId?.email,
+      });
+      throw new Error("Patient email is missing or invalid");
+    }
+
+    // Log email attempt details
+    console.log("Preparing to send confirmation email:", {
+      appointmentId: appointment._id,
+      to: appointment.patientId.email,
+      patientName: appointment.patientId.name,
+      doctorName: appointment.doctorId.name,
+      fee: appointment.fee,
+      date: appointment.date,
+      time: appointment.time,
+    });
+
+    // Configure Nodemailer transporter using environment variables
+    const transporter = nodemailer.createTransport({
+      service: "gmail", // Using Gmail; could be replaced with SendGrid, etc.
+      auth: {
+        user: process.env.EMAIL_USER, // Email address from .env
+        pass: process.env.EMAIL_PASS, // App password or email password from .env
+      },
+    });
+
+    // Verify transporter connection
+    await transporter.verify();
+    console.log("Nodemailer transporter verified successfully");
+
+    // Define email content with appointment details
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: appointment.patientId.email,
+      subject: "Your Appointment Has Been Successfully Booked",
+      text: `Dear ${appointment.patientId.name},
+
+Your appointment has been successfully booked.
+
+Details:
+- Patient Name: ${appointment.patientId.name}
+- Paid Amount: $${appointment.fee}
+- Appointed Date: ${appointment.date} at ${appointment.time}
+- Doctor: Dr. ${appointment.doctorId.name}
+
+Thank you for booking with us!`,
+    };
+
+    // Send the email
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Confirmation email sent successfully:", {
+      messageId: info.messageId,
+      to: appointment.patientId.email,
+    });
+  } catch (error) {
+    // Enhanced error logging for debugging
+    console.error("Error sending confirmation email:", {
+      message: error.message,
+      stack: error.stack,
+      appointmentId: appointment._id,
+      patientEmail: appointment.patientId?.email,
+      emailUser: process.env.EMAIL_USER ? "Set" : "Not set",
+      emailPass: process.env.EMAIL_PASS ? "Set" : "Not set",
+    });
+  }
+}
+
+// Confirm an appointment and send confirmation email
 exports.confirmAppointment = async (req, res) => {
   const { appointmentId } = req.body;
   const userId = req.user._id;
@@ -586,6 +733,7 @@ exports.confirmAppointment = async (req, res) => {
       throw new Error("Appointment is not in pending status");
     }
 
+    // Update appointment status to confirmed
     appointment.status = "confirmed";
     await appointment.save();
     console.log("Appointment confirmed:", {
@@ -593,6 +741,15 @@ exports.confirmAppointment = async (req, res) => {
       status: appointment.status,
     });
 
+    // Populate patient and doctor details for email
+    const fullAppointment = await Appointment.findById(appointmentId)
+      .populate("patientId", "name email")
+      .populate("doctorId", "name");
+
+    // Send confirmation email to the patient
+    await sendConfirmationEmail(fullAppointment);
+
+    // Return updated appointment with populated fields
     const updatedAppointment = await Appointment.findById(
       appointmentId
     ).populate(
